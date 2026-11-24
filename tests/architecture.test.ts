@@ -14,9 +14,10 @@ const ALLOWED: Record<string, readonly string[]> = {
   geometry: ['theme'],
   persistence: ['domain'],
   validation: ['domain'],
+  export: ['domain'],
   layout: ['domain', 'geometry', 'theme'],
   render: ['geometry', 'theme'],
-  app: ['domain', 'geometry', 'layout', 'persistence', 'render', 'theme', 'validation'],
+  app: ['domain', 'export', 'geometry', 'layout', 'persistence', 'render', 'theme', 'validation'],
 };
 
 const src = fileURLToPath(new URL('../src', import.meta.url));
