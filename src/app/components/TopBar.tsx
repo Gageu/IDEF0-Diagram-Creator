@@ -13,6 +13,8 @@ const SHORTCUTS: readonly (readonly [keys: string, what: string])[] = [
   ['Esc', 'Clear the selection'],
   ['Double-click', 'Open a box’s child diagram'],
   ['Right-click', 'Actions for a box, an arrow or the diagram'],
+  ['Drag a handle', 'Pull from the handle on a box to another box to connect them'],
+  ['Drag a parent arrow', 'Drop it on a box to connect it there'],
   ['Scroll / drag', 'Zoom and pan the diagram'],
   ['Ctrl+Z  Ctrl+Shift+Z', 'Undo and redo'],
   ['Ctrl+S  Ctrl+O', 'Save and open a model file'],

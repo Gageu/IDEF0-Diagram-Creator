@@ -1,16 +1,14 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState, type MouseEvent, type PointerEvent } from 'react';
 import { getFunction } from '../../domain';
 import type { DrawnDiagram } from '../composition';
+import { boxAt } from '../editor/connectDrag';
 import { menuFor } from '../editor/contextMenu';
 import type { Selection } from '../editor/editorState';
 import type { Screen } from '../useScreen';
+import { ConnectLayer } from './ConnectLayer';
 import { Icon } from './Icon';
 
-interface View {
-  readonly x: number;
-  readonly y: number;
-  readonly scale: number;
-}
+type View = import('./ConnectLayer').DiagramView;
 
 const MIN_SCALE = 0.2;
 const MAX_SCALE = 4;
@@ -18,6 +16,8 @@ const MAX_SCALE = 4;
 const CLICK_SLOP = 4;
 /** Room left around a fitted drawing, and under it for the zoom controls. */
 const FIT_MARGIN = 28;
+/** How far outside a box, in screen pixels, the pointer still counts as beside it, so that it can reach the box's handle. */
+const HOVER_MARGIN = 30;
 
 /** CSS that recolours the selected element inside the rendered SVG; the SVG itself is never edited. */
 function highlightCss(selection: Selection): string {
@@ -36,6 +36,9 @@ export function DiagramPane({ screen, drawn, error }: { screen: Screen; drawn: D
   const [view, setView] = useState<View>({ x: 0, y: 0, scale: 1 });
   const drag = useRef<{ startX: number; startY: number; origin: View; moved: boolean }>();
   const size = drawn?.geometry.size;
+  const boxes = drawn?.geometry.boxes ?? [];
+  const [hoverId, setHoverId] = useState<string>();
+  const suppressClick = useRef(false);
 
   const fit = useCallback((): void => {
     const box = viewport.current?.getBoundingClientRect();
@@ -81,6 +84,11 @@ export function DiagramPane({ screen, drawn, error }: { screen: Screen; drawn: D
   };
   const onPointerMove = (event: PointerEvent<HTMLDivElement>): void => {
     const d = drag.current;
+    if (event.buttons === 0) {
+      const box = event.currentTarget.getBoundingClientRect();
+      const point = { x: (event.clientX - box.left - view.x) / view.scale, y: (event.clientY - box.top - view.y) / view.scale };
+      setHoverId(boxAt(boxes, point, HOVER_MARGIN / view.scale)?.id);
+    }
     if (!d || event.buttons === 0) return;
     const [dx, dy] = [event.clientX - d.startX, event.clientY - d.startY];
     if (!d.moved && Math.hypot(dx, dy) < CLICK_SLOP) return;
@@ -99,6 +107,10 @@ export function DiagramPane({ screen, drawn, error }: { screen: Screen; drawn: D
     return { kind: onThisDiagram ? 'arrow' : 'parent-arrow', id: arrowId };
   };
   const onClick = (event: MouseEvent): void => {
+    if (suppressClick.current) {
+      suppressClick.current = false;
+      return;
+    }
     if (drag.current?.moved) return;
     editor.select(pick(event));
   };
@@ -125,7 +137,7 @@ export function DiagramPane({ screen, drawn, error }: { screen: Screen; drawn: D
           <span><strong>Layout warning.</strong> The automatic layout could not avoid: {defects.map((d) => d.message).join('; ')}.</span>
         </div>
       )}
-      <div className="canvas-viewport" ref={viewport} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onClick={onClick} onDoubleClick={onDoubleClick} onContextMenu={onContextMenu}>
+      <div className="canvas-viewport" ref={viewport} onPointerDownCapture={() => { suppressClick.current = false; }} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onClick={onClick} onDoubleClick={onDoubleClick} onPointerLeave={() => setHoverId(undefined)} onContextMenu={onContextMenu}>
         <style>{highlightCss(state.selection)}</style>
         {error !== undefined && <p role="alert" className="canvas-message">This diagram could not be drawn: {error}</p>}
         {drawn === undefined && error === undefined && <p className="canvas-message">Loading the arrow router…</p>}
@@ -137,6 +149,7 @@ export function DiagramPane({ screen, drawn, error }: { screen: Screen; drawn: D
             dangerouslySetInnerHTML={{ __html: drawn.svg }}
           />
         )}
+        {drawn !== undefined && <ConnectLayer screen={screen} boxes={boxes} view={view} viewport={viewport} hoverId={hoverId} suppressClick={suppressClick} />}
       </div>
       <div className="zoom-controls" role="group" aria-label="Zoom">
         <button className="ghost icon-button" onClick={() => zoomCentre(1 / 1.25)} aria-label="Zoom out" title="Zoom out"><Icon name="minus" /></button>
