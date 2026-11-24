@@ -11,6 +11,8 @@ function geometry(overrides: Partial<DiagramGeometry>): DiagramGeometry {
     boxes: [],
     arrows: [],
     texts: [],
+    leaders: [],
+    defects: [],
     ...overrides,
   };
 }

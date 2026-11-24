@@ -1,14 +1,17 @@
-/** Draws every diagram of the reference model into `examples/out/` for a visual check. */
+/** Draws every diagram of the reference model into `examples/out/` and lists any layout defects. */
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
-import { createDrawDiagram, loadRouter, naiveRouter } from '../src/app/composition';
+import { createPipeline, loadRouter, naiveRouter, theme } from '../src/app/composition';
 import { diagramIds, diagramNode } from '../src/domain';
 import { importReferencePack } from '../src/persistence';
+import { renderSvg } from '../src/render/svgRenderer';
 
 const model = importReferencePack(readFileSync('examples/change_control_model.json', 'utf8'));
-const drawDiagram = createDrawDiagram(process.argv.includes('--naive') ? naiveRouter() : await loadRouter());
+const pipeline = createPipeline(process.argv.includes('--naive') ? naiveRouter() : await loadRouter());
 mkdirSync('examples/out', { recursive: true });
 for (const id of diagramIds(model)) {
+  const geometry = pipeline.layout(model, id);
   const file = `examples/out/${diagramNode(model, id)}.svg`;
-  writeFileSync(file, drawDiagram(model, id));
-  console.log(`wrote ${file}`);
+  writeFileSync(file, renderSvg(geometry, theme));
+  console.log(`wrote ${file}: ${geometry.defects.length} defects`);
+  for (const defect of geometry.defects) console.log(`  ${defect.kind}: ${defect.message}`);
 }

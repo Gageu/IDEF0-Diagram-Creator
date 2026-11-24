@@ -7,6 +7,7 @@ import type { DiagramId, Model } from '../domain';
 import {
   approximateTextMeasurer,
   createAssignSlotsStage,
+  createCheckLayoutStage,
   createLayoutPipeline,
   createLibavoidRouter,
   createMergeBusesStage,
@@ -23,6 +24,8 @@ import {
 } from '../layout';
 import { renderSvg } from '../render/svgRenderer';
 import { referenceTheme } from '../theme/theme';
+
+export const theme = referenceTheme;
 
 const deps: LayoutDeps = {
   options: referenceLayoutOptions,
@@ -57,6 +60,7 @@ export function createPipeline(router: Router): LayoutPipeline {
     createMergeBusesStage(),
     createPlaceLabelsStage(deps),
     createPlaceNoteStage(deps),
+    createCheckLayoutStage(deps),
   ]);
 }
 
