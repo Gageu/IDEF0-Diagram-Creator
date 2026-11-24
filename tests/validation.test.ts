@@ -1,11 +1,12 @@
 import { describe, expect, it } from 'vitest';
-import { addArrow, addFunction, CONTEXT_DIAGRAM, createModel, renameFunction, type Command, type Model } from '../src/domain';
+import { addArrow, addFunction, CONTEXT_DIAGRAM, createModel, defineTerm, renameFunction, type Command, type Model } from '../src/domain';
 import {
   blocksExport,
   boxCount,
   controlAndOutput,
   duplicateLabel,
   emptyLabel,
+  glossaryDefinition,
   idef0Rules,
   levelConsistency,
   looksLikeVerbPhrase,
@@ -35,12 +36,23 @@ function decomposed(count: number): Model {
 const messages = (model: Model, rule: Rule): string[] => rule.check(model).map((f) => f.message);
 
 describe('validation', () => {
-  it('finds nothing wrong with the reference model', () => {
-    expect(validate(referenceModel(), idef0Rules)).toEqual([]);
+  /** The reference pack has no glossary, so structural checks leave the glossary rule out. */
+  const structuralRules = idef0Rules.filter((rule) => rule !== glossaryDefinition);
+
+  it('finds nothing wrong with the structure of the reference model', () => {
+    expect(validate(referenceModel(), structuralRules)).toEqual([]);
   });
 
-  it('a sound context diagram has no violations', () => {
-    expect(validate(context(), idef0Rules)).toEqual([]);
+  it('a sound context diagram has no structural violations', () => {
+    expect(validate(context(), structuralRules)).toEqual([]);
+  });
+
+  it('warns once, with a count, while glossary terms lack a definition', () => {
+    const model = context();
+    expect(messages(model, glossaryDefinition)).toEqual(['3 glossary terms have no definition']);
+    const defined = run(model, defineTerm({ term: 'Policy', definition: 'A rule' }), defineTerm({ term: 'Result', definition: 'What comes out' }));
+    expect(glossaryDefinition.check(defined)).toEqual([{ diagramId: CONTEXT_DIAGRAM, subject: { kind: 'glossary' }, message: '1 glossary term has no definition' }]);
+    expect(messages(run(defined, defineTerm({ term: 'Run Process', definition: 'The activity' })), glossaryDefinition)).toEqual([]);
   });
 
   it('M5 reports a parent arrow the child diagram does not carry', () => {
