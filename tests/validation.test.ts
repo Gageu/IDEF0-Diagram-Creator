@@ -97,7 +97,7 @@ describe('validation', () => {
 
   it('B1 warns about function names that are not a verb and its object', () => {
     expect(looksLikeVerbPhrase('Analyze Change Impact')).toBe(true);
-    expect(looksLikeVerbPhrase('Implement Approved Change')).toBe(true);
+    expect(looksLikeVerbPhrase('Master Audio File')).toBe(true);
     expect(looksLikeVerbPhrase('Analysis')).toBe(false);
     expect(looksLikeVerbPhrase('The Review')).toBe(false);
     expect(messages(run(context(), renameFunction({ id: 'root', label: 'Process' })), verbPhrase)).toHaveLength(1);

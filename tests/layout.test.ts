@@ -32,8 +32,8 @@ function segmentsCross([a, b]: [Point, Point], [c, d]: [Point, Point]): boolean 
 describe('wrapText', () => {
   const measure = (line: string): number => approximateTextMeasurer.width(line, referenceTheme.text.boxLabel);
   it('uses the fewest lines, then balances them', () => {
-    expect(wrapText('Manage Requirement Change Requests', 236, measure)).toEqual(['Manage Requirement', 'Change Requests']);
-    expect(wrapText('Verify Change', 126, measure)).toEqual(['Verify Change']);
+    expect(wrapText('Coordinate Remote Guest Interview Recordings', 236, measure)).toEqual(['Coordinate Remote Guest', 'Interview Recordings']);
+    expect(wrapText('Edit Audio', 126, measure)).toEqual(['Edit Audio']);
     expect(wrapText('', 100, measure)).toEqual([]);
   });
 });
@@ -46,25 +46,25 @@ describe('A-0 context diagram of the reference model', () => {
   it('has the reference canvas, frame, footer and one centred box', () => {
     expect(g.size).toEqual({ width: 1100, height: 624 });
     expect(g.frame).toEqual({ x: 20, y: 20, width: 1060, height: 540 });
-    expect(g.footer).toEqual({ node: 'A-0', title: 'Manage Requirement Change Requests', number: 'CC-01' });
+    expect(g.footer).toEqual({ node: 'A-0', title: 'Produce Podcast Episode', number: 'PE-01' });
     expect(g.boxes).toHaveLength(1);
-    expect(box).toMatchObject({ number: 'A0', labelLines: ['Manage Requirement', 'Change Requests'], rect: { width: 260, height: 140 } });
+    expect(box).toMatchObject({ number: 'A0', labelLines: ['Produce Podcast Episode'], rect: { width: 260, height: 140 } });
   });
 
   it('brings each role in on its own side (rule B3)', () => {
     const entering = (side: (end: Point, prev: Point) => boolean): number =>
       g.arrows.filter((a) => side(a.points[a.points.length - 1]!, a.points[a.points.length - 2]!)).length;
-    expect(entering((end, prev) => end.x === box.rect.x && prev.x < end.x)).toBe(3); // inputs, left
-    expect(entering((end, prev) => end.y === box.rect.y && prev.y < end.y)).toBe(5); // controls, top
-    expect(entering((end, prev) => end.y === bottom(box.rect) && prev.y > end.y)).toBe(2); // mechanisms, bottom
-    expect(g.arrows.filter((a) => a.points[0]!.x === right(box.rect) && a.points[a.points.length - 1]!.x === right(g.frame))).toHaveLength(5); // outputs, right
+    expect(entering((end, prev) => end.x === box.rect.x && prev.x < end.x)).toBe(2); // inputs, left
+    expect(entering((end, prev) => end.y === box.rect.y && prev.y < end.y)).toBe(3); // controls, top
+    expect(entering((end, prev) => end.y === bottom(box.rect) && prev.y > end.y)).toBe(3); // mechanisms, bottom
+    expect(g.arrows.filter((a) => a.points[0]!.x === right(box.rect) && a.points[a.points.length - 1]!.x === right(g.frame))).toHaveLength(3); // outputs, right
   });
 
-  it('labels every arrow once and shows all fifteen ICOM codes', () => {
+  it('labels every arrow once and shows all eleven ICOM codes', () => {
     const codes = g.texts.filter((t) => t.style === 'icomCode').map((t) => t.lines[0]);
-    expect(codes.sort()).toEqual(['C1', 'C2', 'C3', 'C4', 'C5', 'I1', 'I2', 'I3', 'M1', 'M2', 'O1', 'O2', 'O3', 'O4', 'O5']);
-    expect(g.texts.filter((t) => t.style === 'arrowLabel')).toHaveLength(15);
-    expect(texts).toContain('Change proposal');
+    expect(codes.sort()).toEqual(['C1', 'C2', 'C3', 'I1', 'I2', 'M1', 'M2', 'M3', 'O1', 'O2', 'O3']);
+    expect(g.texts.filter((t) => t.style === 'arrowLabel')).toHaveLength(11);
+    expect(texts).toContain('Episode idea');
     expect(texts.some((line) => line.startsWith('Purpose: '))).toBe(true);
   });
 
@@ -85,24 +85,24 @@ describe('A0 diagram of the reference model', () => {
   const crossings = (edge: (p: Point) => boolean): number => g.arrows.filter((a) => edge(a.points[0]!) || edge(a.points[a.points.length - 1]!)).length;
 
   it('brings each boundary arrow across the frame exactly once', () => {
-    expect(crossings((p) => p.x === g.frame.x)).toBe(3); // I1..I3, though I3 feeds two boxes
-    expect(crossings((p) => p.y === g.frame.y)).toBe(5); // C1..C5, though C3 feeds two boxes
-    expect(crossings((p) => p.y === bottom(g.frame))).toBe(2); // M1 feeds six boxes, M2 splits into five roles
-    expect(crossings((p) => p.x === right(g.frame))).toBe(5); // O1..O5
+    expect(crossings((p) => p.x === g.frame.x)).toBe(2); // I1, I2
+    expect(crossings((p) => p.y === g.frame.y)).toBe(3); // C1..C3, though C1 and C2 each feed two boxes
+    expect(crossings((p) => p.y === bottom(g.frame))).toBe(3); // M1 splits into five roles, M2 and M3 each feed two boxes
+    expect(crossings((p) => p.x === right(g.frame))).toBe(3); // O1..O3
   });
 
   it('shows each ICOM code once and labels each role of the split mechanism', () => {
     const codes = g.texts.filter((t) => t.style === 'icomCode').map((t) => t.lines[0]);
-    expect(codes).toHaveLength(15);
-    expect(new Set(codes).size).toBe(15);
+    expect(codes).toHaveLength(11);
+    expect(new Set(codes).size).toBe(11);
     const labels = g.texts.filter((t) => t.style === 'arrowLabel').map((t) => t.lines.join(' '));
-    expect(labels).toEqual(expect.arrayContaining(['Change control roles', 'Originator & Request Receiver', 'Evaluator', 'CCB', 'Modifier', 'Verifier']));
-    expect(labels.filter((l) => l === 'RM tool')).toHaveLength(1);
+    expect(labels).toEqual(expect.arrayContaining(['Production team', 'Producer', 'Host', 'Audio editor', 'Publisher', 'Community manager']));
+    expect(labels.filter((l) => l === 'Recording studio')).toHaveLength(1);
   });
 
   it('gives every box side its arrowheads', () => {
     const heads = g.arrows.filter((a) => a.head).length;
-    // 15 box-to-box and boundary-to-box ends, 5 outputs to the frame, 6 + 5 mechanism branches... counted from the model:
+    // One head per source and target pair, counted from the model:
     const ends = model.arrows.filter((a) => a.diagramId === model.rootId).reduce((n, a) => n + a.targets.length * a.sources.length, 0);
     expect(heads).toBe(ends);
   });
@@ -164,7 +164,7 @@ describe.each(diagramIds(model).map((id) => [diagramNode(model, id), id] as cons
 });
 
 describe('redraw speed', () => {
-  it('lays out and renders the six-box A0 diagram well inside the 500 ms budget', () => {
+  it('lays out and renders the five-box A0 diagram well inside the 500 ms budget', () => {
     drawDiagram(model, model.rootId); // warm up
     const started = performance.now();
     drawDiagram(model, model.rootId);

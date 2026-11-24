@@ -33,7 +33,7 @@ describe('renderSvg', () => {
   });
 
   it('draws a square box with a centred bold label and its number in the corner', () => {
-    const svg = renderSvg(geometry({ boxes: [{ id: 'f', rect: { x: 420, y: 240, width: 260, height: 140 }, labelLines: ['Manage Requirement', 'Change Requests'], number: 'A0' }] }), referenceTheme);
+    const svg = renderSvg(geometry({ boxes: [{ id: 'f', rect: { x: 420, y: 240, width: 260, height: 140 }, labelLines: ['Produce Podcast', 'Episode'], number: 'A0' }] }), referenceTheme);
     expect(svg).toContain('<rect x="420" y="240" width="260" height="140" fill="#fff" stroke="#000" stroke-width="1.6"/>');
     expect(svg).toContain('x="550" y="307"');
     expect(svg).toContain('x="550" y="323"');
@@ -47,7 +47,7 @@ describe('renderSvg', () => {
   });
 
   it('draws the NODE / TITLE / NUMBER footer below the frame and escapes text', () => {
-    const svg = renderSvg(geometry({ footer: { node: 'A-0', title: 'Checklists & <Templates>', number: 'CC-01' } }), referenceTheme);
+    const svg = renderSvg(geometry({ footer: { node: 'A-0', title: 'Checklists & <Templates>', number: 'PE-01' } }), referenceTheme);
     expect(svg).toContain('<rect x="20" y="220" width="360" height="44"');
     expect(svg).toContain('>NODE:</text>');
     expect(svg).toContain('>Checklists &amp; &lt;Templates&gt;</text>');

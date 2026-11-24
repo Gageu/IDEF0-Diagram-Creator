@@ -38,11 +38,11 @@ describe('SVG export', () => {
 
 describe('glossary export', () => {
   it('lists used terms alphabetically with their definitions and counts the undefined ones', () => {
-    const model = [defineTerm({ term: 'CCB', definition: 'Change Control Board | decides' }), defineTerm({ term: 'Gone term', definition: 'unused' })].reduce((m, c) => c.apply(m), referenceModel());
+    const model = [defineTerm({ term: 'Host', definition: 'Leads the interview | on air' }), defineTerm({ term: 'Gone term', definition: 'unused' })].reduce((m, c) => c.apply(m), referenceModel());
     const result = glossaryMarkdown.export(context({ model }));
     const file = result.files[0]!;
-    expect(file.name).toBe('Requirements-Change-Control-glossary.md');
-    expect(file.content).toContain('| CCB | Change Control Board \\| decides |');
+    expect(file.name).toBe('Podcast-Episode-Production-glossary.md');
+    expect(file.content).toContain('| Host | Leads the interview \\| on air |');
     expect(file.content).not.toContain('Gone term');
     const terms = file.content.split('\n').filter((l) => l.startsWith('| ') && !l.startsWith('| Term') && !l.startsWith('| ---')).map((l) => l.split(' | ')[0]!.slice(2));
     expect(terms).toEqual([...terms].sort((a, b) => a.localeCompare(b, undefined, { sensitivity: 'base' })));
@@ -54,8 +54,8 @@ describe('ICOM table export', () => {
   it('has one table per diagram with each function\'s arrows by role', () => {
     const content = icomTableMarkdown.export(context()).files[0]!.content;
     expect(content.match(/^## /gm)).toHaveLength(4);
-    expect(content).toContain('## A0 Manage Requirement Change Requests');
-    expect(content).toContain('| A1 Submit Change Request | Change proposal | Change control policy | Logged change request | Originator & Request Receiver; RM tool |');
+    expect(content).toContain('## A0 Produce Podcast Episode');
+    expect(content).toContain('| A1 Plan Episode | Episode idea; Guest availability | Editorial calendar; Listener feedback | Recording schedule; Episode outline | Producer |');
   });
 
   it('follows the model', () => {

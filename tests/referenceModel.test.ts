@@ -25,7 +25,7 @@ interface PackDiagram {
 }
 const pack = JSON.parse(referencePackText) as { diagrams: PackDiagram[] };
 
-describe('reference model (change_control_model.json)', () => {
+describe('reference model (podcast_model.json)', () => {
   const model = referenceModel();
 
   it('loads with no integrity problems', () => {
@@ -68,9 +68,9 @@ describe('reference model (change_control_model.json)', () => {
       expect(inheritedBoundary(model, id).filter((b) => b.state === 'unconnected')).toEqual([]);
     }
     const a0 = inheritedBoundary(model, model.rootId);
-    expect(a0.map((b) => b.code).join(' ')).toBe('I1 I2 I3 C1 C2 C3 C4 C5 O1 O2 O3 O4 O5 M1 M2');
-    expect(a0.find((b) => b.code === 'M2')).toMatchObject({ label: 'Change control roles', state: 'split' });
-    expect(a0.find((b) => b.code === 'M2')!.childArrowIds).toHaveLength(5);
+    expect(a0.map((b) => b.code).join(' ')).toBe('I1 I2 C1 C2 C3 O1 O2 O3 M1 M2 M3');
+    expect(a0.find((b) => b.code === 'M1')).toMatchObject({ label: 'Production team', state: 'split' });
+    expect(a0.find((b) => b.code === 'M1')!.childArrowIds).toHaveLength(5);
   });
 
   it('survives a save and load round trip unchanged', () => {

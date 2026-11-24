@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useReducer } from 'react';
-import examplePack from '../../../examples/change_control_model.json?raw';
+import examplePack from '../../../examples/podcast_model.json?raw';
 import { createModel, type Command, type DiagramId, type Model } from '../../domain';
 import { importReferencePack, parseModel, serializeModel } from '../../persistence';
 import { zipFiles, type Exporter } from '../../export';

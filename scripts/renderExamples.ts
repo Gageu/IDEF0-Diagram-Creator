@@ -5,7 +5,7 @@ import { diagramIds, diagramNode } from '../src/domain';
 import { importReferencePack } from '../src/persistence';
 import { renderSvg } from '../src/render/svgRenderer';
 
-const model = importReferencePack(readFileSync('examples/change_control_model.json', 'utf8'));
+const model = importReferencePack(readFileSync('examples/podcast_model.json', 'utf8'));
 const pipeline = createPipeline(process.argv.includes('--naive') ? naiveRouter() : await loadRouter());
 mkdirSync('examples/out', { recursive: true });
 for (const id of diagramIds(model)) {
