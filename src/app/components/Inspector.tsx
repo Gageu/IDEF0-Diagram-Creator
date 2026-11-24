@@ -34,6 +34,7 @@ import type { FocusField } from '../editor/workspaceState';
 import type { Screen } from '../useScreen';
 import { AddArrowRow } from './AddArrowRow';
 import { EndSelect } from './EndSelect';
+import { TargetSelect } from './TargetSelect';
 import { Icon } from './Icon';
 import { TextField } from './TextField';
 
@@ -258,7 +259,7 @@ function ArrowEditor({ screen, arrowId }: { screen: Screen; arrowId: ArrowId }) 
         </ul>
         {target && (
           <div className="add-row is-single">
-            <EndSelect choices={targets} value={target.key} onChange={setTargetKey} label="Another target" />
+            <TargetSelect model={model} choices={targets} value={target.key} onChange={setTargetKey} />
             <button onClick={() => editor.run(addArrowTarget({ id: arrowId, target: target.end }))} title="The arrow branches to this end as well">Add target</button>
           </div>
         )}

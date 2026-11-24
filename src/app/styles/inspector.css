@@ -20,6 +20,10 @@
 .add-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
 .add-row > input { grid-column: 1 / -1; }
 .add-row .hint { grid-column: 1 / -1; }
+.add-row > button { align-self: end; }
+.target-select { display: grid; gap: 6px; min-width: 0; }
+.target-select label { display: grid; grid-template-columns: 20px minmax(0, 1fr); align-items: center; gap: 6px; }
+.target-select label > span { color: var(--text-muted); font-size: 12px; font-weight: 500; }
 
 .parent-label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
 .menu-inline { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }

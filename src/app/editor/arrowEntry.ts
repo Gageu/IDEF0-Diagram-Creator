@@ -110,6 +110,47 @@ export function targetChoices(model: Model, diagramId: DiagramId): EndChoice<Arr
   return [...inheritable, ...functions, ...boundary.filter((c) => c.defaultLabel === undefined)];
 }
 
+/**
+ * One place an arrow can go: a function, or a way across the boundary. A
+ * function holds one choice for each role the arrow may still enter it by, so
+ * the screen asks "to where" and "as what" as two questions instead of listing
+ * every pairing. A boundary holds its single choice.
+ */
+export interface TargetPlace<End> {
+  readonly key: string;
+  readonly text: string;
+  readonly group: EndChoice<End>['group'];
+  readonly choices: readonly EndChoice<End>[];
+}
+
+/** The role a choice enters its function by, when it is a function end with a role. */
+export function entryRoleOf(choice: EndChoice<ArrowSource | ArrowTarget>): EntryRole | undefined {
+  return choice.end.kind === 'function' && 'role' in choice.end ? choice.end.role : undefined;
+}
+
+/** Groups choices by where they lead, keeping their order. */
+export function targetPlaces<End extends ArrowSource | ArrowTarget>(model: Model, choices: readonly EndChoice<End>[]): TargetPlace<End>[] {
+  const places: TargetPlace<End>[] = [];
+  for (const choice of choices) {
+    const { end } = choice;
+    const key = end.kind === 'function' ? `function:${end.functionId}` : choice.key;
+    const place = places.find((p) => p.key === key);
+    if (place) places[places.indexOf(place)] = { ...place, choices: [...place.choices, choice] };
+    else places.push({ key, group: choice.group, choices: [choice], text: end.kind === 'function' ? `${nodeNumber(model, end.functionId)} ${model.functions[end.functionId]?.label ?? ''}` : choice.text });
+  }
+  return places;
+}
+
+/**
+ * The choice to hold after the user picks another place: the same role as
+ * before where that place offers it, so that changing only "to" leaves "as"
+ * alone, and otherwise the place's first.
+ */
+export function choiceAt<End extends ArrowSource | ArrowTarget>(place: TargetPlace<End>, previous: EndChoice<End> | undefined): EndChoice<End> {
+  const role = previous ? entryRoleOf(previous) : undefined;
+  return place.choices.find((c) => role !== undefined && entryRoleOf(c) === role) ?? place.choices[0]!;
+}
+
 /** The other ends offered in the add row of one side of one function. */
 export function otherEndChoices(model: Model, functionId: FunctionId, role: Role): EndChoice<ArrowSource | ArrowTarget>[] {
   const diagramId = diagramOfFunction(model, functionId);

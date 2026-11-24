@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { connectParentArrow, detachArrow, otherEndChoices, planArrowEntry, sourceChoices, targetChoices, type EntryPlan } from '../src/app/editor/arrowEntry';
+import { choiceAt, connectParentArrow, detachArrow, entryRoleOf, otherEndChoices, planArrowEntry, sourceChoices, targetChoices, targetPlaces, type EntryPlan } from '../src/app/editor/arrowEntry';
 import { canRedoEdit, canUndoEdit, createEditorState, currentModel, editorReducer, hasUnsavedChanges, type EditorAction, type EditorState } from '../src/app/editor/editorState';
 import { addArrow, addFunction, arrowsOn, batch, CONTEXT_DIAGRAM, createModel, deleteFunction, getArrow, inheritedBoundary, renameFunction, type Command, type Model } from '../src/domain';
 
@@ -98,6 +98,35 @@ describe('arrow entry', () => {
       'Part of O1 Tea',
       'Tunneled (not on the parent)',
     ]);
+  });
+
+  it('groups targets by place, so "to where" and "as what" are separate questions', () => {
+    const model = sample();
+    const places = targetPlaces(model, otherEndChoices(model, 'boil', 'output'));
+    expect(places.map((p) => [p.text, p.group, p.choices.length])).toEqual([
+      ['O1 Tea', 'Boundary', 1],
+      ['A2 Steep Leaves', 'Functions', 3],
+      ['A3 Pour Tea', 'Functions', 3],
+      ['Part of O1 Tea', 'Boundary', 1],
+      ['Tunneled (not on the parent)', 'Boundary', 1],
+    ]);
+    expect(places[1]!.choices.map(entryRoleOf)).toEqual(['input', 'control', 'mechanism']);
+    expect(entryRoleOf(places[0]!.choices[0]!)).toBeUndefined();
+    // Only the roles still open at a function are offered there.
+    const open = targetPlaces(model, targetChoices(model, 'root').filter((c) => c.key !== 'function:steep:input'));
+    expect(open.find((p) => p.key === 'function:steep')!.choices.map(entryRoleOf)).toEqual(['control', 'mechanism']);
+    // Sources have no role, so each is a place of its own.
+    expect(targetPlaces(model, sourceChoices(model, 'root', 'input')).every((p) => p.choices.length === 1)).toBe(true);
+  });
+
+  it('keeps the role when only the place changes, where the new place offers it', () => {
+    const model = sample();
+    const [, steep, pour, , tunneled] = targetPlaces(model, otherEndChoices(model, 'boil', 'output'));
+    const asControl = steep!.choices[1]!;
+    expect(choiceAt(pour!, asControl).key).toBe('function:pour:control');
+    expect(choiceAt(pour!, undefined).key).toBe('function:pour:input');
+    expect(choiceAt(tunneled!, asControl).key).toBe('tunneled');
+    expect(choiceAt({ ...pour!, choices: [pour!.choices[0]!] }, asControl).key).toBe('function:pour:input');
   });
 
   it('a blank label on a parent arrow takes the parent label and connects it', () => {
