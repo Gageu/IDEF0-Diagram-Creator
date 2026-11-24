@@ -1,7 +1,15 @@
 /** Browser file helpers: the only place the editor touches downloads, file pickers and local storage. */
 
 export function downloadText(fileName: string, text: string, mimeType: string): void {
-  const url = URL.createObjectURL(new Blob([text], { type: mimeType }));
+  download(fileName, new Blob([text], { type: mimeType }));
+}
+
+export function downloadBytes(fileName: string, bytes: Uint8Array<ArrayBuffer>, mimeType: string): void {
+  download(fileName, new Blob([bytes], { type: mimeType }));
+}
+
+function download(fileName: string, blob: Blob): void {
+  const url = URL.createObjectURL(blob);
   const link = document.createElement('a');
   link.href = url;
   link.download = fileName;

@@ -101,3 +101,17 @@ kbd { padding: 0 4px; border: 1px solid var(--line); border-radius: 3px; font: i
 .diagram-id { min-width: 30px; color: var(--muted); }
 .inherited { margin: 4px 10px; border-collapse: collapse; }
 .inherited td { padding: 3px 12px 3px 0; }
+
+.menu { position: relative; }
+.menu summary { padding: 3px 9px; border: 1px solid var(--line); border-radius: 4px; background: #fff; cursor: pointer; list-style: none; }
+.menu summary::-webkit-details-marker { display: none; }
+.menu summary::after { content: ' ▾'; color: var(--muted); }
+.menu ul { position: absolute; right: 0; z-index: 10; margin: 4px 0 0; padding: 4px; list-style: none; border: 1px solid var(--line); border-radius: 4px; background: #fff; box-shadow: 0 4px 12px rgb(0 0 0 / 0.15); }
+.menu li button { width: 100%; border: none; text-align: left; white-space: nowrap; }
+.menu li button:hover:not(:disabled) { background: #eef2f6; }
+
+.glossary { width: calc(100% - 20px); margin: 4px 10px; border-collapse: collapse; }
+.glossary th { width: 28%; padding: 3px 12px 3px 0; font-weight: 400; text-align: left; vertical-align: baseline; }
+.glossary th .badge { margin-left: 6px; }
+.glossary td { padding: 2px 6px 2px 0; }
+.glossary td:last-child { width: 1%; }

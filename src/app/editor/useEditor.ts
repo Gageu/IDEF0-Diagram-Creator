@@ -2,10 +2,12 @@ import { useCallback, useEffect, useMemo, useReducer } from 'react';
 import examplePack from '../../../examples/change_control_model.json?raw';
 import { createModel, type Command, type DiagramId, type Model } from '../../domain';
 import { importReferencePack, parseModel, serializeModel } from '../../persistence';
+import { zipFiles, type Exporter } from '../../export';
 import type { Violation } from '../../validation';
-import { checkModel } from '../composition';
+import { checkModel, renderExportSvg, type LayoutDiagram } from '../composition';
 import { createEditorState, currentModel, editorReducer, hasUnsavedChanges, type EditorAction, type EditorState, type Selection } from './editorState';
-import { downloadText, fileNameFor, pickTextFile, readDraft, writeDraft } from './files';
+import { runExport } from './exporting';
+import { downloadBytes, downloadText, fileNameFor, pickTextFile, readDraft, writeDraft } from './files';
 
 export interface Editor {
   readonly state: EditorState;
@@ -20,6 +22,8 @@ export interface Editor {
   loadExample(): void;
   openFile(): Promise<void>;
   saveFile(): void;
+  /** Runs an exporter and downloads what it produces: one file as it is, several as a zip. */
+  exportWith(exporter: Exporter, layout: LayoutDiagram): void;
 }
 
 function exampleModel(): Model {
@@ -97,6 +101,13 @@ export function useEditor(): Editor {
       saveFile: () => {
         downloadText(fileNameFor(model.info.name, 'json'), serializeModel(model), 'application/json');
         dispatch({ type: 'saved' });
+      },
+      exportWith: (exporter, layout) => {
+        const { files, notes } = runExport(exporter, { model, diagramId: state.diagramId, violations, layout, render: renderExportSvg });
+        const [only] = files;
+        if (files.length === 1 && only) downloadText(only.name, only.content, only.mimeType);
+        else if (files.length > 1) downloadBytes(fileNameFor(model.info.name, 'zip'), zipFiles(files), 'application/zip');
+        if (notes.length > 0) dispatch({ type: 'report', message: `${files.length === 0 ? 'Nothing was exported. ' : ''}${notes.join('. ')}.` });
       },
     }),
     [state, model, violations, confirmDiscard],

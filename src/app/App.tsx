@@ -5,27 +5,27 @@ import { DiagramPane } from './components/DiagramPane';
 import { FunctionTree } from './components/FunctionTree';
 import { Inspector, isTyping } from './components/Inspector';
 import { Toolbar } from './components/Toolbar';
-import { createViewDiagram, loadRouter, type DrawnDiagram, type ViewDiagram } from './composition';
+import { createLayoutDiagram, createViewDiagram, loadRouter, type DrawnDiagram, type LayoutDiagram } from './composition';
 import { useEditor, type Editor } from './editor/useEditor';
 
 /** The router's WebAssembly module, served as a static asset by the bundler. */
 const routerWasmUrl = new URL('../../node_modules/libavoid-js/dist/libavoid.wasm', import.meta.url).href;
 
 /** Loads the arrow router once; until it arrives there is nothing to draw with. */
-function useViewDiagram(): { view: ViewDiagram | undefined; error: string | undefined } {
-  const [view, setView] = useState<ViewDiagram>();
+function useLayoutDiagram(): { layout: LayoutDiagram | undefined; error: string | undefined } {
+  const [layout, setLayout] = useState<LayoutDiagram>();
   const [error, setError] = useState<string>();
   useEffect(() => {
     let current = true;
     loadRouter(routerWasmUrl).then(
-      (router) => current && setView(() => createViewDiagram(router)),
+      (router) => current && setLayout(() => createLayoutDiagram(router)),
       (reason: unknown) => current && setError(`the arrow router failed to load (${String(reason)})`),
     );
     return () => {
       current = false;
     };
   }, []);
-  return { view, error };
+  return { layout, error };
 }
 
 /** Shortcuts that work anywhere on the screen. Undo and redo stay with the browser while typing in a field. */
@@ -63,7 +63,8 @@ function useGlobalShortcuts(editor: Editor): void {
  */
 export function App() {
   const editor = useEditor();
-  const { view, error: routerError } = useViewDiagram();
+  const { layout, error: routerError } = useLayoutDiagram();
+  const view = useMemo(() => (layout ? createViewDiagram(layout) : undefined), [layout]);
   const { model, state } = editor;
   useGlobalShortcuts(editor);
 
@@ -79,7 +80,7 @@ export function App() {
 
   return (
     <div className="app">
-      <Toolbar editor={editor} />
+      <Toolbar editor={editor} layout={layout} />
       {state.message !== undefined && (
         <div className="message" role="alert">
           <span>{state.message}</span>

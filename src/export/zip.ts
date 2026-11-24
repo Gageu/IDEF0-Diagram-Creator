@@ -39,7 +39,7 @@ function header(signature: number, fields: readonly (readonly [size: 2 | 4, valu
   return bytes;
 }
 
-export function zipFiles(entries: readonly ZipEntry[]): Uint8Array {
+export function zipFiles(entries: readonly ZipEntry[]): Uint8Array<ArrayBuffer> {
   const encoder = new TextEncoder();
   const local: Uint8Array[] = [];
   const central: Uint8Array[] = [];
