@@ -1,14 +1,8 @@
 import type { LayoutDeps } from '../boundaryLabel';
 import { boundaryLabelExtent, widestLine } from '../boundaryLabel';
 import type { LayoutStage, PlacedBox } from '../state';
-import type { DiagramView, Side, ViewEnd } from '../view';
+import type { DiagramView, Side } from '../view';
 import { wrapText } from '../wrapText';
-
-/** How many distinct arrows attach to one side of a box. */
-function arrowsOnSide(view: DiagramView, boxId: string, side: Side): number {
-  const attaches = (end: ViewEnd): boolean => end.kind === 'box' && end.boxId === boxId && end.side === side;
-  return view.arrows.filter((a) => (side === 'right' ? a.sources : a.targets).some(attaches)).length;
-}
 
 /** The labels of arrows that cross one edge of the frame. */
 function boundaryLabels(view: DiagramView, side: Side): string[] {
@@ -36,7 +30,7 @@ export function createPlaceBoxesStage(deps: LayoutDeps): LayoutStage {
       const labelWidth = (line: string): number => measurer.width(line, theme.text.boxLabel);
 
       const sized = view.boxes.map((box) => {
-        const count = (side: Side): number => arrowsOnSide(view, box.id, side);
+        const count = (side: Side): number => box.sides[side].length;
         const longestWord = Math.max(0, ...box.label.split(/\s+/).map(labelWidth));
         const width = Math.ceil(
           Math.max(minWidth, longestWord + 2 * o.labelPadding, (Math.max(count('top'), count('bottom')) + 1) * o.topSlotSpacing),

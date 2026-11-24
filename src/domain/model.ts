@@ -86,8 +86,8 @@ export type ArrowTarget = FunctionTarget | BoundaryTarget;
 
 /**
  * One arrow on one diagram. Several targets is a branch; several sources is
- * a join. The order of arrows in the model is the order of arrows along a
- * box side, which is what ICOM codes are derived from.
+ * a join. The order of arrows in the model breaks ties in the order of arrows
+ * along a box side (see `arrowsAt`), which is what ICOM codes follow.
  */
 export interface Arrow {
   readonly id: ArrowId;

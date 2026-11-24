@@ -49,6 +49,11 @@ describe('module boundaries', () => {
     expect(violations).toEqual([]);
   });
 
+  it('names the routing library only inside its adapter', () => {
+    const users = files.filter((f) => /from\s+'libavoid-js'/.test(readFileSync(f, 'utf8'))).map((f) => relative(src, f));
+    expect(users).toEqual(['layout/routers/libavoidRouter.ts']);
+  });
+
   it('only the app shell uses React', () => {
     const offenders = files.filter((f) => !relative(src, f).startsWith('app/') && /from\s+'react/.test(readFileSync(f, 'utf8')));
     expect(offenders).toEqual([]);

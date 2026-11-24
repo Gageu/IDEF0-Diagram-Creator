@@ -107,10 +107,44 @@ export function touches(arrow: Arrow, functionId: FunctionId, role: Role): boole
   );
 }
 
-/** The arrows on one side of a function's box, in side order. */
+/**
+ * Where an arrow belongs along one side of a box, as a sort key. The
+ * convention keeps arrows from crossing next to the box and depends only on
+ * the model, so the layout and the ICOM codes always agree:
+ * - outputs, top to bottom: the arrow that reaches farthest forward first
+ *   (the boundary is farthest), then feedback to earlier boxes;
+ * - inputs, top to bottom: arrows from earlier boxes (farthest first), then
+ *   boundary arrows, then feedback from later boxes;
+ * - controls, left to right: arrows from earlier boxes (nearest first), then
+ *   boundary arrows, then feedback;
+ * - mechanisms keep model order.
+ * Arrows with equal keys keep their model order, which `moveArrow` changes.
+ */
+function sideKey(siblings: readonly FunctionId[], arrow: Arrow, functionId: FunctionId, role: Role): readonly [number, number] {
+  const own = siblings.indexOf(functionId);
+  const index = (id: FunctionId): number => siblings.indexOf(id);
+  if (role === 'output') {
+    const reach = arrow.targets.map((t) => (t.kind === 'function' ? index(t.functionId) : Infinity));
+    const farthest = Math.max(...reach);
+    return farthest > own ? [0, -farthest] : [1, -Math.min(...reach)];
+  }
+  if (role === 'mechanism') return [0, 0];
+  if (arrow.sources.some((s) => s.kind === 'boundary')) return [1, 0];
+  const from = arrow.sources.flatMap((s) => (s.kind === 'function' ? [index(s.functionId)] : []));
+  const earliest = Math.min(...from);
+  if (earliest >= own) return [2, Math.max(...from)];
+  return [0, role === 'input' ? earliest : -earliest];
+}
+
+/** The arrows on one side of a function's box, in side order (see `sideKey`). */
 export function arrowsAt(model: Model, functionId: FunctionId, role: Role): Arrow[] {
   const diagramId = diagramOfFunction(model, functionId);
-  return model.arrows.filter((a) => a.diagramId === diagramId && touches(a, functionId, role));
+  const siblings = functionsOn(model, diagramId).map((f) => f.id);
+  return model.arrows
+    .filter((a) => a.diagramId === diagramId && touches(a, functionId, role))
+    .map((arrow, position) => ({ arrow, position, key: sideKey(siblings, arrow, functionId, role) }))
+    .sort((a, b) => a.key[0] - b.key[0] || a.key[1] - b.key[1] || a.position - b.position)
+    .map((entry) => entry.arrow);
 }
 
 const CODE_LETTER: Record<Role, string> = { input: 'I', control: 'C', output: 'O', mechanism: 'M' };
