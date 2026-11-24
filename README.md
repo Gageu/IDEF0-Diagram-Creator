@@ -6,18 +6,19 @@ The design is in [docs/design-spec.md](docs/design-spec.md).
 
 ## Status
 
-Milestones 1 and 2 of the design spec are in place:
+Milestones 1 to 3 of the design spec are in place:
 
 - **Domain model** with commands, undo and redo, and JSON save and load. The
   reference model in `examples/change_control_model.json` imports cleanly.
-- **SVG renderer** ported from the reference pack's `idef0.py`, fed by a layout
-  pipeline with staircase box placement and a naive router. The A-0 context
-  diagram draws correctly; the child diagrams draw with overlapping arrows and
-  labels until routing, bus merging and label placement arrive in milestones
-  3 and 4.
+- **SVG renderer** ported from the reference pack's `idef0.py`.
+- **Layout pipeline**: staircase box placement, side slots ordered to avoid
+  crossings, boundary arrows drawn as rakes with shared trunks, and
+  obstacle-avoiding routing through libavoid. On all four reference diagrams
+  no arrow passes through a box and no two arrows share a line.
 
-The browser app is a read-only preview of the reference model for now. The
-editor is milestone 5.
+Labels are still placed at fixed spots and collide on the busier diagrams;
+label placement and the quality gate are milestone 4. The browser app is a
+read-only preview of the reference model for now; the editor is milestone 5.
 
 ## Getting started
 
@@ -29,6 +30,7 @@ npm run dev              # preview in the browser
 npm test                 # unit, layout and architecture tests
 npm run typecheck
 npm run render:examples  # write every reference diagram to examples/out/
+                         # (add -- --naive to compare with the naive router)
 ```
 
 ## How the code is organised
@@ -52,7 +54,7 @@ it. `tests/architecture.test.ts` enforces this table.
 | --- | --- |
 | An edit | Write a function that returns `defineCommand(...)` in `src/domain/commands` |
 | A layout stage | Implement `LayoutStage` and add it to the list in `src/app/composition.ts` |
-| A router | Implement `Router`, run `describeRouterContract` on it in a test, and swap it in `composition.ts` |
+| A router | Implement `Router`, run `describeRouterContract` on it in a test, and swap it in `composition.ts` (`libavoidRouter.ts` is the worked example) |
 | A different look | Pass another `Theme` or `LayoutOptions` in `composition.ts` |
 
 ### Model notes
@@ -64,5 +66,6 @@ it. `tests/architecture.test.ts` enforces this table.
   (context diagram), `inherited` from a parent arrow, a `split` of a parent
   arrow into a named sub-arrow, or `tunneled`. An unexplained boundary arrow
   cannot be stored.
-- The order of arrows in the model is their order along a box side, which is
-  what ICOM codes follow. `moveArrow` changes it.
+- The order of arrows along a box side follows a convention that avoids
+  crossings (see `arrowsAt`), and ICOM codes follow the same order. Model
+  order breaks ties, and `moveArrow` changes it.

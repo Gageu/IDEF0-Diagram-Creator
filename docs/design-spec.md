@@ -1,6 +1,6 @@
 # IDEF0 Diagram Creator: Design Spec
 
-Last updated: 2026-11-24
+Last updated: 2026-11-24 (pipeline stages revised during milestone 3)
 
 ## 1. Purpose and scope
 
@@ -71,7 +71,7 @@ A TypeScript web app is the best fit because SVG is native to the browser, so th
 | Tests | Vitest, plus SVG snapshot tests | Runs domain and layout tests in Node |
 | Persistence | JSON file via the File System Access API, with download and upload as fallback | No backend |
 
-Open point: libavoid is LGPL. That is fine for a class project and for an open repository, but it should be confirmed before any other licence is chosen for this repo.
+Open point: libavoid-js is LGPL-2.1-or-later. It is used unmodified as an npm dependency, which is fine for a class project and for an open repository, but it should be confirmed before any other licence is chosen for this repo.
 
 ## 4. Architecture
 
@@ -146,13 +146,18 @@ Layout is a chain of stages, each a pure function from one layout state to the n
 
 | # | Stage | Does | Convention it implements |
 | --- | --- | --- | --- |
-| 1 | Build view | Selects one diagram's functions and arrows from the model and computes its boundary arrows and ICOM codes | M5, M6 |
+| 1 | Build view | Selects one diagram's functions and arrows from the model and computes its boundary arrows, ICOM codes and the order of arrows on each box side | M5, M6 |
 | 2 | Place boxes | Staircase from top-left to bottom-right; box size grows with label length and the number of arrows on its busiest side | D1 |
-| 3 | Assign side slots | Orders arrows along each box side and along each frame edge to minimise crossings | Slot spacing 20 to 25 px |
-| 4 | Route | Orthogonal routing around boxes; input feedback below the boxes, control feedback above | B6, D3 |
-| 5 | Merge buses | Joins shared segments of branches, joins and bundles into one trunk with T-junctions | B8 |
-| 6 | Place labels | Puts each label beside a segment, never on a line or box; falls back to a leader squiggle | B10 |
-| 7 | Check | Detects arrow-through-box, label overlap and out-of-frame geometry | Quality gate |
+| 3 | Assign side slots | Fixes the point where each arrow meets each box side, in the side order from the view | Slot spacing 20 to 25 px |
+| 4 | Plan connections | Turns each arrow into point-to-point connections for the router. A boundary arrow that serves several boxes becomes a rake: straight to its first box, with a lane beside the frame edge carrying the branches | B8 |
+| 5 | Route | Orthogonal routing around boxes through the `Router` interface | B6, D3 |
+| 6 | Merge buses | Draws the path that connections of one arrow share only once, so branches start at T-junctions and joins end on their trunk | B8 |
+| 7 | Place labels | Puts each label beside a segment, never on a line or box; falls back to a leader squiggle | B10 |
+| 8 | Check | Detects arrow-through-box, label overlap and out-of-frame geometry | Quality gate |
+
+**Side order.** The order of arrows along a box side is a rule over the model, not a layout result: outputs that reach farthest come first, inputs from earlier boxes sit above boundary inputs, feedback comes last. It lives in the domain (`arrowsAt`) because ICOM codes on the child diagram follow the same order, and the two must never disagree.
+
+**Rakes.** Because of the staircase, a lane next to a frame edge and the straight branches from it can never meet a box, so rakes are planned without search and handed to the router as fixed corners. The router still sees them, which lets it keep other arrows off the same line.
 
 **Interfaces.** Every stage implements `LayoutStage { name, run(state): LayoutState }`. The router sits behind its own `Router` interface with a libavoid implementation and an ELK implementation, chosen in one configuration object.
 
