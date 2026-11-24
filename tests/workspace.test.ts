@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { arrowMenu, diagramMenu, functionMenu, menuFor, parentArrowMenu, type MenuAction, type MenuEntry } from '../src/app/editor/contextMenu';
 import { addFunctionStep, decomposeStep, deleteSelectionCommand, renameFunctionCommand, STARTING_BOXES } from '../src/app/editor/functionActions';
-import { definitionOf, filterGlossary, glossaryCounts, glossaryRows } from '../src/app/editor/glossaryView';
+import { definitionOf, filterGlossary, glossaryCounts, glossaryRows, nextUndefinedTerm } from '../src/app/editor/glossaryView';
 import { ancestors, branchOf, expandableIds, treeMove, treeRows } from '../src/app/editor/treeView';
 import { createWorkspaceState, workspaceReducer, type WorkspaceAction, type WorkspaceState } from '../src/app/editor/workspaceState';
 import { addArrow, addFunction, arrowsOn, CONTEXT_DIAGRAM, createModel, defineTerm, functionsOn, inheritedBoundary, renameArrow, type Command, type Model } from '../src/domain';
@@ -172,6 +172,21 @@ describe('glossary view', () => {
     expect(filterGlossary(rows, 'all', ' water ').map((r) => r.term)).toEqual(['Boil Water', 'Hot water', 'Water']);
     expect(filterGlossary(rows, 'all', 'drink').map((r) => r.term)).toEqual(['Tea']);
     expect(filterGlossary(rows, 'undefined', 'drink')).toEqual([]);
+  });
+
+  it('finds the next term that needs a definition, skipping defined ones and going round to the top', () => {
+    const model = defineTerm({ term: 'Tea', definition: 'The finished drink' }).apply(sample());
+    const all = filterGlossary(glossaryRows(model), 'all', '');
+    const terms = all.map((r) => r.term);
+    const tea = terms.indexOf('Tea');
+    expect(nextUndefinedTerm(all, terms[tea - 1]!)).toBe(terms[tea + 1]);
+    expect(nextUndefinedTerm(all, terms[0]!)).toBe(terms[1]);
+    expect(nextUndefinedTerm(all, terms[terms.length - 1]!)).toBe(terms[0]);
+
+    const missing = filterGlossary(glossaryRows(model), 'undefined', '');
+    expect(nextUndefinedTerm(missing, missing[0]!.term)).toBe(missing[1]!.term);
+    expect(nextUndefinedTerm([missing[0]!], missing[0]!.term)).toBeUndefined();
+    expect(nextUndefinedTerm(all.filter((r) => r.term === 'Tea'), 'Tea')).toBeUndefined();
   });
 });
 

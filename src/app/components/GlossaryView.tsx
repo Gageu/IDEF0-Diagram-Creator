@@ -1,6 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { defineTerm, removeTerm } from '../../domain';
-import { filterGlossary, glossaryCounts, glossaryRows, type GlossaryUse } from '../editor/glossaryView';
+import { filterGlossary, glossaryCounts, glossaryRows, nextUndefinedTerm, type GlossaryUse } from '../editor/glossaryView';
 import type { GlossaryFilter } from '../editor/workspaceState';
 import type { Screen } from '../useScreen';
 import { Icon } from './Icon';
@@ -34,6 +34,13 @@ export function GlossaryView({ screen }: { screen: Screen }) {
   const countOf: Record<GlossaryFilter, number> = { all: rows.length, undefined: counts.undefined, unused: counts.unused };
   const progress = counts.used === 0 ? 0 : counts.defined / counts.used;
 
+  const fields = useRef(new Map<string, HTMLInputElement | HTMLTextAreaElement>());
+  /** After Enter in a definition, the cursor goes to the next term that needs one. */
+  const focusNext = (term: string): void => {
+    const next = nextUndefinedTerm(shown, term);
+    if (next !== undefined) fields.current.get(next)?.focus();
+  };
+
   const goTo = (use: GlossaryUse): void => editor.open(use.diagramId, { kind: use.kind, id: use.id });
 
   return (
@@ -41,7 +48,7 @@ export function GlossaryView({ screen }: { screen: Screen }) {
       <header className="glossary-header">
         <div className="glossary-title">
           <h2>Glossary</h2>
-          <p className="hint">Every function and arrow name in the model. A definition typed here is the same one shown in the editor panel.</p>
+          <p className="hint">Every function and arrow name in the model. A definition typed here is the same one shown in the editor panel. Press Enter to save one and move to the next term that needs one.</p>
         </div>
         <div className="progress" title={`${counts.defined} of ${counts.used} terms defined`}>
           <span className="progress-text"><strong>{counts.defined}</strong> of {counts.used} defined</span>
@@ -90,7 +97,7 @@ export function GlossaryView({ screen }: { screen: Screen }) {
               </div>
             </div>
             <div className="term-definition">
-              <TextField multiline value={row.definition} label={`Definition of ${row.term}`} placeholder="Add a definition" onCommit={(definition) => editor.run(defineTerm({ term: row.term, definition }))} />
+              <TextField multiline fieldRef={(el) => void (el ? fields.current.set(row.term, el) : fields.current.delete(row.term))} onEnter={() => focusNext(row.term)} value={row.definition} label={`Definition of ${row.term}`} placeholder="Add a definition" onCommit={(definition) => editor.run(defineTerm({ term: row.term, definition }))} />
             </div>
           </article>
         ))}
