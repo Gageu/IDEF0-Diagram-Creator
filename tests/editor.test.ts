@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { otherEndChoices, planArrowEntry, sourceChoices, targetChoices, type EntryPlan } from '../src/app/editor/arrowEntry';
+import { connectParentArrow, detachArrow, otherEndChoices, planArrowEntry, sourceChoices, targetChoices, type EntryPlan } from '../src/app/editor/arrowEntry';
 import { canRedoEdit, canUndoEdit, createEditorState, currentModel, editorReducer, hasUnsavedChanges, type EditorAction, type EditorState } from '../src/app/editor/editorState';
 import { addArrow, addFunction, arrowsOn, batch, CONTEXT_DIAGRAM, createModel, deleteFunction, getArrow, inheritedBoundary, renameFunction, type Command, type Model } from '../src/domain';
 
@@ -146,5 +146,24 @@ describe('arrow entry', () => {
     const model = sample();
     expect(planArrowEntry(model, { functionId: 'boil', role: 'control', label: '  ', other: otherEndChoices(model, 'boil', 'control').find((c) => c.key === 'tunneled') })).toEqual({ kind: 'invalid', reason: 'Type a label' });
     expect(planArrowEntry(model, { functionId: 'boil', role: 'control', label: 'Rule', other: undefined })).toEqual({ kind: 'invalid', reason: 'Choose where the arrow comes from' });
+  });
+
+  it('connects a parent arrow to a function in one step, once', () => {
+    let model = sample();
+    model = apply(model, connectParentArrow(model, 'root', 'tea', 'pour'));
+    expect(arrowsOn(model, 'root')[0]).toMatchObject({ label: 'Tea', sources: [{ kind: 'function', functionId: 'pour' }], targets: [{ kind: 'boundary', link: { kind: 'inherited', parentArrowId: 'tea' } }] });
+    expect(connectParentArrow(model, 'root', 'tea', 'boil').kind).toBe('invalid');
+    expect(connectParentArrow(model, 'root', 'nope', 'boil').kind).toBe('invalid');
+  });
+
+  it('detaching the last end of an arrow deletes it, otherwise the arrow keeps its other ends', () => {
+    let model = sample();
+    model = apply(model, connectParentArrow(model, 'root', 'cook', 'boil'));
+    model = apply(model, planArrowEntry(model, { functionId: 'steep', role: 'mechanism', label: 'Cook', other: undefined }));
+    const cook = arrowsOn(model, 'root')[0]!;
+    model = detachArrow(cook, 'boil', 'mechanism').apply(model);
+    expect(getArrow(model, cook.id).targets).toEqual([{ kind: 'function', functionId: 'steep', role: 'mechanism' }]);
+    model = detachArrow(getArrow(model, cook.id), 'steep', 'mechanism').apply(model);
+    expect(arrowsOn(model, 'root')).toEqual([]);
   });
 });

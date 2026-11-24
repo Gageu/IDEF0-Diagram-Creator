@@ -9,6 +9,9 @@ import {
   addArrow,
   addArrowSource,
   addArrowTarget,
+  deleteArrow,
+  removeArrowSource,
+  removeArrowTarget,
   arrowsOn,
   CONTEXT_DIAGRAM,
   diagramOfFunction,
@@ -178,4 +181,26 @@ export function planArrowEntry(model: Model, entry: ArrowEntry): EntryPlan {
     ? addArrow({ diagramId, label, sources: [other.end], targets: [{ kind: 'function', functionId, role: role as EntryRole }] })
     : addArrow({ diagramId, label, sources: [{ kind: 'function', functionId }], targets: [other.end] });
   return { kind: 'new', description: `Adds the arrow "${label}"`, command };
+}
+
+/**
+ * Takes an arrow off one side of a function. The arrow keeps its other ends;
+ * if this was its only source or only target, the whole arrow goes.
+ */
+export function detachArrow(arrow: Arrow, functionId: FunctionId, role: Role): Command {
+  if (role === 'output') {
+    const index = arrow.sources.findIndex((s) => s.kind === 'function' && s.functionId === functionId);
+    return arrow.sources.length > 1 ? removeArrowSource({ id: arrow.id, index }) : deleteArrow({ id: arrow.id });
+  }
+  const index = arrow.targets.findIndex((t) => t.kind === 'function' && t.functionId === functionId && t.role === role);
+  return arrow.targets.length > 1 ? removeArrowTarget({ id: arrow.id, index }) : deleteArrow({ id: arrow.id });
+}
+
+/** Connects an unconnected parent arrow to one function on the child diagram, under the parent's label. */
+export function connectParentArrow(model: Model, diagramId: DiagramId, parentArrowId: string, functionId: FunctionId): EntryPlan {
+  const parent = inheritedBoundary(model, diagramId).find((p) => p.parentArrowId === parentArrowId);
+  if (!parent) return { kind: 'invalid', reason: 'That arrow does not touch this diagram\'s parent box' };
+  const other = otherEndChoices(model, functionId, parent.role).find((c) => c.key === `inherit:${parentArrowId}`);
+  if (!other) return { kind: 'invalid', reason: `"${parent.label}" is already connected on this diagram` };
+  return planArrowEntry(model, { functionId, role: parent.role, label: '', other });
 }

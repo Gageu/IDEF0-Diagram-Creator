@@ -4,6 +4,7 @@
  * here, and every other module sees only interfaces.
  */
 import type { DiagramId, Model } from '../domain';
+import type { DiagramGeometry } from '../geometry/geometry';
 import {
   approximateTextMeasurer,
   createAssignSlotsStage,
@@ -28,6 +29,7 @@ import {
 } from '../layout';
 import { renderSvg } from '../render/svgRenderer';
 import { referenceTheme } from '../theme/theme';
+import { idef0Rules, validate, type Violation } from '../validation';
 
 export const theme = referenceTheme;
 
@@ -84,4 +86,26 @@ export type DrawDiagram = (model: Model, diagramId: DiagramId) => string;
 export function createDrawDiagram(router: Router): DrawDiagram {
   const pipeline = createPipeline(router);
   return (model, diagramId) => renderSvg(pipeline.layout(model, diagramId), theme);
+}
+
+export interface DrawnDiagram {
+  readonly geometry: DiagramGeometry;
+  /** The drawing for the screen: the exported SVG plus click targets. */
+  readonly svg: string;
+}
+
+export type ViewDiagram = (model: Model, diagramId: DiagramId) => DrawnDiagram;
+
+/** The on-screen view of a diagram, with its geometry so the screen can report layout warnings. */
+export function createViewDiagram(router: Router): ViewDiagram {
+  const pipeline = createPipeline(router);
+  return (model, diagramId) => {
+    const geometry = pipeline.layout(model, diagramId);
+    return { geometry, svg: renderSvg(geometry, theme, { interactive: true }) };
+  };
+}
+
+/** Every IDEF0 rule the app checks, applied to a model. */
+export function checkModel(model: Model): Violation[] {
+  return validate(model, idef0Rules);
 }
