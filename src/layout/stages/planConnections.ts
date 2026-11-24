@@ -1,10 +1,12 @@
-import { bottom, right, type Point } from '../../geometry/geometry';
+import { bottom, right, type Point, type TunnelMark } from '../../geometry/geometry';
 import { boundaryLabelExtent, verticalLabelLines, widestLine, type LayoutDeps } from '../boundaryLabel';
 import { slotKey, type Connection, type Heading, type LabelAnchor, type LayoutStage, type LayoutState, type PlacedBox } from '../state';
 import type { Side, ViewArrow, ViewBundle, ViewEnd } from '../view';
 
 type EntrySide = Exclude<Side, 'right'>;
 const ENTRY_HEADING: Record<EntrySide, Heading> = { left: 'east', top: 'south', bottom: 'north' };
+/** One step from each frame edge into the diagram. */
+const INWARD: Record<Side, Point> = { left: { x: 1, y: 0 }, right: { x: -1, y: 0 }, top: { x: 0, y: 1 }, bottom: { x: 0, y: -1 } };
 
 /** A box end of an arrow, with its fixed point. */
 interface BoxEnd {
@@ -20,6 +22,7 @@ interface BoundaryGroup {
   readonly side: Side;
   readonly code: string | undefined;
   readonly bundle: ViewBundle | undefined;
+  readonly tunneled: boolean;
   readonly ends: BoxEnd[];
 }
 
@@ -44,6 +47,7 @@ export function createPlanConnectionsStage(deps: LayoutDeps): LayoutStage {
       const order = new Map(state.boxes.map((b, i) => [b.id, i]));
       const connections: Connection[] = [];
       const anchors: LabelAnchor[] = [];
+      const tunnels: TunnelMark[] = [];
 
       const boxEnds = (arrow: ViewArrow, ends: readonly ViewEnd[]): BoxEnd[] =>
         ends.flatMap((end) =>
@@ -58,7 +62,7 @@ export function createPlanConnectionsStage(deps: LayoutDeps): LayoutStage {
           const boundary = (direction === 'in' ? arrow.sources : arrow.targets).find((e) => e.kind === 'boundary');
           if (boundary?.kind !== 'boundary') continue;
           const netId = `${direction}:${boundary.bundle?.id ?? arrow.id}`;
-          const group = byNet.get(netId) ?? { netId, side: boundary.side, code: boundary.code, bundle: boundary.bundle, ends: [] };
+          const group = byNet.get(netId) ?? { netId, side: boundary.side, code: boundary.code, bundle: boundary.bundle, tunneled: boundary.tunneled, ends: [] };
           group.ends.push(...boxEnds(arrow, direction === 'in' ? arrow.targets : arrow.sources));
           byNet.set(netId, group);
         }
@@ -70,7 +74,12 @@ export function createPlanConnectionsStage(deps: LayoutDeps): LayoutStage {
         const members = new Set(group.ends.map((e) => e.arrow.id));
         const first = group.ends[0]!.arrow;
         const text = group.bundle && members.size > 1 ? group.bundle.label : first.label;
-        anchors.push({ arrowId: first.id, text, code: group.code, point, edge, run: edge === 'left' || edge === 'right' ? 'horizontal' : 'vertical' });
+        const run = edge === 'left' || edge === 'right' ? 'horizontal' : 'vertical';
+        const inward = INWARD[edge];
+        // A tunneled arrow wears parentheses at the frame, and its label starts after them.
+        const clear = group.tunneled && run === 'horizontal' ? deps.theme.tunnel.far + 4 : 0;
+        if (group.tunneled) tunnels.push({ at: point, run, inward });
+        anchors.push({ arrowId: first.id, text, code: group.code, point: { x: point.x + inward.x * clear, y: point.y }, edge, run });
       };
       const branchLabel = (group: BoundaryGroup, end: BoxEnd, point: Point, run: LabelAnchor['run']): void => {
         const alreadyAtFrame = !group.bundle || new Set(group.ends.map((e) => e.arrow.id)).size === 1;
@@ -162,7 +171,7 @@ export function createPlanConnectionsStage(deps: LayoutDeps): LayoutStage {
       }
 
       const fanned = fanOutAroundSingleBox(state, connections, anchors, deps);
-      return { ...state, ...fanned };
+      return { ...state, ...fanned, tunnels };
     },
   };
 }

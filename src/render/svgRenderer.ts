@@ -13,6 +13,8 @@ import {
   type LeaderGeometry,
   type Point,
   type TextAnchor,
+  type TextGeometry,
+  type TunnelMark,
 } from '../geometry/geometry';
 import type { TextStyleName, Theme } from '../theme/theme';
 
@@ -60,7 +62,7 @@ function distance(a: Point, b: Point): number {
   return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
 }
 
-function arrow(theme: Theme, a: ArrowGeometry): string {
+function arrow(theme: Theme, a: ArrowGeometry, hitArea: boolean): string {
   const points = a.points.filter((p, i) => i === 0 || distance(p, a.points[i - 1]!) > 0);
   if (points.length < 2) return '';
   const { bendRadius, headLength, headHalfWidth, strokeWidth } = theme.arrow;
@@ -86,7 +88,10 @@ function arrow(theme: Theme, a: ArrowGeometry): string {
   // The line stops at the arrowhead's base so editors show one clean triangle.
   const base = a.head ? { x: end.x - dir.x * headLength, y: end.y - dir.y * headLength } : end;
   d += ` L${n(base.x)},${n(base.y)}`;
-  let svg = `<path d="${d}" fill="none" stroke="${theme.ink}" stroke-width="${strokeWidth}"/>`;
+  const dash = a.dashed ? ` stroke-dasharray="${theme.arrow.unconnectedDash}"` : '';
+  let svg = `<path d="${d}" fill="none" stroke="${theme.ink}" stroke-width="${strokeWidth}"${dash}/>`;
+  // A wide invisible stroke makes a thin line easy to click.
+  if (hitArea) svg += `<path d="${d}" fill="none" stroke="transparent" stroke-width="12" pointer-events="stroke"/>`;
   if (a.head) {
     const p1 = { x: base.x - dir.y * headHalfWidth, y: base.y + dir.x * headHalfWidth };
     const p2 = { x: base.x + dir.y * headHalfWidth, y: base.y - dir.x * headHalfWidth };
@@ -102,6 +107,20 @@ function leader(theme: Theme, l: LeaderGeometry): string {
   const [nx, ny] = [(-dy / length) * 4, (dx / length) * 4];
   const at = (t: number, side: number): string => `${n(l.from.x + dx * t + nx * side)},${n(l.from.y + dy * t + ny * side)}`;
   return `<path d="M${at(0, 0)} L${at(0.4, 1)} L${at(0.6, -1)} L${at(1, 0)}" fill="none" stroke="${theme.ink}" stroke-width="${theme.leader.strokeWidth}"/>`;
+}
+
+/** The two parentheses of a tunneled arrow, facing each other across the arrow just inside the frame. */
+function tunnel(theme: Theme, t: TunnelMark): string {
+  const { near, far, halfHeight } = theme.tunnel;
+  const across = t.run === 'horizontal' ? { x: 0, y: 1 } : { x: 1, y: 0 };
+  const paren = (distance: number, bulge: number): string => {
+    const centre = { x: t.at.x + t.inward.x * distance, y: t.at.y + t.inward.y * distance };
+    const from = { x: centre.x - across.x * halfHeight, y: centre.y - across.y * halfHeight };
+    const to = { x: centre.x + across.x * halfHeight, y: centre.y + across.y * halfHeight };
+    const control = { x: centre.x - t.inward.x * bulge, y: centre.y - t.inward.y * bulge };
+    return `<path d="M${n(from.x)},${n(from.y)} Q${n(control.x)},${n(control.y)} ${n(to.x)},${n(to.y)}" fill="none" stroke="${theme.ink}" stroke-width="${theme.arrow.strokeWidth}"/>`;
+  };
+  return paren(near, 4) + paren(far, -4);
 }
 
 function footer(theme: Theme, g: DiagramGeometry): string {
@@ -124,16 +143,30 @@ function footer(theme: Theme, g: DiagramGeometry): string {
   );
 }
 
-export function renderSvg(geometry: DiagramGeometry, theme: Theme): string {
+export interface RenderOptions {
+  /**
+   * For an on-screen view: wraps each box, arrow and label in a group that
+   * names its model element (`data-function-id`, `data-arrow-id`) and widens
+   * the area that reacts to a click on an arrow. The drawing looks the same.
+   */
+  readonly interactive?: boolean;
+}
+
+export function renderSvg(geometry: DiagramGeometry, theme: Theme, options: RenderOptions = {}): string {
   const { size, frame } = geometry;
+  const interactive = options.interactive === true;
+  const group = (attribute: string, id: string | undefined, content: string): string =>
+    interactive && id !== undefined && content !== '' ? `<g ${attribute}="${escapeXml(id)}">${content}</g>` : content;
+  const label = (t: TextGeometry): string => lines(theme, t.x, t.y, t.lines, t.style, t.anchor);
   return (
     `<svg xmlns="http://www.w3.org/2000/svg" width="${n(size.width)}" height="${n(size.height)}" viewBox="0 0 ${n(size.width)} ${n(size.height)}">` +
     `<rect width="${n(size.width)}" height="${n(size.height)}" fill="${theme.paper}"/>` +
     `<rect x="${n(frame.x)}" y="${n(frame.y)}" width="${n(frame.width)}" height="${n(frame.height)}" fill="none" stroke="${theme.ink}" stroke-width="${theme.frame.strokeWidth}"/>` +
-    geometry.boxes.map((b) => box(theme, b)).join('') +
-    geometry.arrows.map((a) => arrow(theme, a)).join('') +
+    geometry.boxes.map((b) => group('data-function-id', b.id, box(theme, b))).join('') +
+    geometry.arrows.map((a) => group('data-arrow-id', a.arrowId, arrow(theme, a, interactive))).join('') +
+    geometry.tunnels.map((t) => tunnel(theme, t)).join('') +
     geometry.leaders.map((l) => leader(theme, l)).join('') +
-    geometry.texts.map((t) => lines(theme, t.x, t.y, t.lines, t.style, t.anchor)).join('') +
+    geometry.texts.map((t) => group('data-arrow-id', t.arrowId, label(t))).join('') +
     footer(theme, geometry) +
     '</svg>'
   );

@@ -12,6 +12,7 @@ function geometry(overrides: Partial<DiagramGeometry>): DiagramGeometry {
     arrows: [],
     texts: [],
     leaders: [],
+    tunnels: [],
     defects: [],
     ...overrides,
   };
@@ -52,5 +53,38 @@ describe('renderSvg', () => {
     expect(svg).toContain('>Checklists &amp; &lt;Templates&gt;</text>');
     expect(svg).toContain('<line x1="190" y1="220" x2="190" y2="264"');
     expect(svg).toContain('<line x1="180" y1="220" x2="180" y2="264"');
+  });
+
+  it('draws an unconnected parent arrow dashed', () => {
+    const svg = renderSvg(geometry({ arrows: [{ arrowId: 'p', head: true, dashed: true, points: [{ x: 20, y: 100 }, { x: 50, y: 100 }] }] }), referenceTheme);
+    expect(svg).toContain('stroke-dasharray="6 4"');
+  });
+
+  it('draws a tunneled arrow end as two parentheses that bulge away from each other', () => {
+    const svg = renderSvg(geometry({ tunnels: [{ at: { x: 20, y: 100 }, run: 'horizontal', inward: { x: 1, y: 0 } }] }), referenceTheme);
+    expect(svg).toContain('<path d="M34,94 Q30,100 34,106"');
+    expect(svg).toContain('<path d="M46,94 Q50,100 46,106"');
+  });
+
+  it('names model elements and widens click targets only when interactive', () => {
+    const g = geometry({
+      boxes: [{ id: 'f<1>', rect: { x: 100, y: 60, width: 150, height: 80 }, labelLines: ['Do It'], number: 'A1' }],
+      arrows: [{ arrowId: 'a1', head: true, points: [{ x: 20, y: 100 }, { x: 100, y: 100 }] }],
+      texts: [
+        { x: 30, y: 94, lines: ['Input'], style: 'arrowLabel', anchor: 'start', arrowId: 'a1' },
+        { x: 300, y: 50, lines: ['A note'], style: 'note', anchor: 'start' },
+      ],
+    });
+    const plain = renderSvg(g, referenceTheme);
+    expect(plain).not.toContain('data-');
+    expect(plain).not.toContain('transparent');
+
+    const interactive = renderSvg(g, referenceTheme, { interactive: true });
+    expect(interactive).toContain('<g data-function-id="f&lt;1&gt;">');
+    expect(interactive.match(/<g data-arrow-id="a1">/g)).toHaveLength(2);
+    expect(interactive).toContain('stroke="transparent" stroke-width="12" pointer-events="stroke"');
+    // Apart from the groups and hit areas, the drawing is the exported one.
+    const stripped = interactive.replace(/<g data-[a-z-]+="[^"]*">|<\/g>|<path[^>]*transparent[^>]*\/>/g, '');
+    expect(stripped).toBe(plain);
   });
 });

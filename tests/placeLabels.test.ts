@@ -35,7 +35,7 @@ function place(parts: Partial<LayoutState>): LayoutState {
 describe('place labels', () => {
   it('sets a label above the start of its arrow when that spot is free', () => {
     const state = place({ routes: [arrow('a', p(200, 200), p(600, 200))], anchors: [inside('a', 'Work order', p(200, 200))] });
-    expect(state.texts).toEqual([{ x: 208, y: 194, lines: ['Work order'], style: 'arrowLabel', anchor: 'start' }]);
+    expect(state.texts).toEqual([{ x: 208, y: 194, lines: ['Work order'], style: 'arrowLabel', anchor: 'start', arrowId: 'a' }]);
     expect(state.defects).toEqual([]);
   });
 

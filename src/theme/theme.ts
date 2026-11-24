@@ -25,7 +25,11 @@ export interface Theme {
     readonly bendRadius: number;
     readonly headLength: number;
     readonly headHalfWidth: number;
+    /** Dash pattern of a parent arrow that is not connected on this diagram yet. */
+    readonly unconnectedDash: string;
   };
+  /** The parentheses of a tunneled arrow: distance from the frame to each one (clear of an arrowhead there), and their half height. */
+  readonly tunnel: { readonly near: number; readonly far: number; readonly halfHeight: number };
   readonly leader: { readonly strokeWidth: number };
   readonly frame: { readonly strokeWidth: number };
   readonly footer: {
@@ -52,7 +56,8 @@ export const referenceTheme: Theme = {
     footerValue: { fontSize: 15, bold: true, lineHeight: 18 },
   },
   box: { strokeWidth: 1.6, numberInset: 5 },
-  arrow: { strokeWidth: 1.3, bendRadius: 8, headLength: 10, headHalfWidth: 4.5 },
+  arrow: { strokeWidth: 1.3, bendRadius: 8, headLength: 10, headHalfWidth: 4.5, unconnectedDash: '6 4' },
+  tunnel: { near: 14, far: 26, halfHeight: 6 },
   leader: { strokeWidth: 0.8 },
   frame: { strokeWidth: 1 },
   footer: { height: 44, nodeCellWidth: 170, numberCellWidth: 200, textInset: 8, captionBaseline: 15, valueBaseline: 34 },
