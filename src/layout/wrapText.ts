@@ -1,7 +1,7 @@
 /**
  * Breaks text into the fewest lines that fit `maxWidth`, then balances them:
  * of all breakings with that many lines it picks the one whose longest line
- * is shortest. "Manage Requirement Change Requests" becomes two even lines
+ * is shortest. "Coordinate Remote Guest Interview Recordings" becomes two even lines
  * instead of three words and an orphan.
  */
 export function wrapText(text: string, maxWidth: number, measure: (line: string) => number): string[] {

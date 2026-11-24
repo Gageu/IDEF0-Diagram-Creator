@@ -108,7 +108,7 @@ The app shell is the only place that names concrete implementations: which route
 
 ## 5. Domain model
 
-The model holds meaning only, with no coordinates, so the same model can be laid out, validated and exported by independent modules. It extends the shape of `change_control_model.json` in the reference pack.
+The model holds meaning only, with no coordinates, so the same model can be laid out, validated and exported by independent modules. It extends the shape of `podcast_model.json` in the reference pack.
 
 | Entity | Key fields | Notes |
 | --- | --- | --- |
@@ -256,7 +256,7 @@ Each principle below is tied to a specific decision in this design, so it can be
 **Testing**
 
 - Domain and validation: unit tests on commands and on each rule.
-- Layout: the reference model (`change_control_model.json`) is the fixture. Tests assert the quality gate reports zero defects on A-0, A0, A2 and A4, and compare SVG snapshots.
+- Layout: the reference model (`podcast_model.json`) is the fixture. Tests assert the quality gate reports zero defects on A-0, A0, A2 and A4, and compare SVG snapshots.
 - Router contract tests run against both implementations.
 - Visual check against the reference PNGs when a stage changes.
 

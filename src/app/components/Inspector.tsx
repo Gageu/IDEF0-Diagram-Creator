@@ -141,7 +141,7 @@ function FunctionEditor({ screen, functionId }: { screen: Screen; functionId: Fu
       </header>
       <label className="field">
         <span>Name</span>
-        <TextField fieldRef={register('label')} value={fn.label} label="Function name" placeholder="A verb phrase, such as Review Request" onCommit={(label) => editor.run(renameFunctionCommand(model, functionId, label))} />
+        <TextField fieldRef={register('label')} value={fn.label} label="Function name" placeholder="A verb phrase, such as Edit Audio" onCommit={(label) => editor.run(renameFunctionCommand(model, functionId, label))} />
       </label>
       <DefinitionField screen={screen} term={fn.label} register={register('definition')} />
       {decompose ? (
@@ -219,7 +219,7 @@ function ArrowEditor({ screen, arrowId }: { screen: Screen; arrowId: ArrowId }) 
       </header>
       <label className="field">
         <span>Label</span>
-        <TextField fieldRef={register('label')} value={arrow.label} label="Arrow label" placeholder="A noun phrase, such as Approved Request" onCommit={(label) => editor.run(renameArrow({ id: arrowId, label }))} />
+        <TextField fieldRef={register('label')} value={arrow.label} label="Arrow label" placeholder="A noun phrase, such as Edited Episode" onCommit={(label) => editor.run(renameArrow({ id: arrowId, label }))} />
       </label>
       <DefinitionField screen={screen} term={arrow.label} register={register('definition')} />
       <section className="role-card">
@@ -301,7 +301,7 @@ const INFO_FIELDS: readonly { key: keyof ModelInfo; title: string; multiline?: b
   { key: 'purpose', title: 'Purpose', multiline: true, placeholder: 'Why the model exists and what question it answers' },
   { key: 'viewpoint', title: 'Viewpoint', multiline: true, placeholder: 'Whose view of the system this is' },
   { key: 'context', title: 'Context', multiline: true, placeholder: 'What is inside and outside the boundary' },
-  { key: 'numberPrefix', title: 'Diagram number prefix', placeholder: 'For example CC, giving CC-01' },
+  { key: 'numberPrefix', title: 'Diagram number prefix', placeholder: 'For example PE, giving PE-01' },
 ];
 
 function ModelDetails({ screen }: { screen: Screen }) {

@@ -226,7 +226,7 @@ function NewArrowPopover(props: { screen: Screen; fromId: FunctionId; drop: { fu
         <p className="hint">An output of {describeFunction(model, fromId)}</p>
         <label className="field">
           <span>Label</span>
-          <input type="text" autoFocus value={label} list="new-arrow-labels" placeholder={other?.defaultLabel ?? 'A noun phrase, such as Approved Request'} aria-label="Label of the new arrow" onChange={(e) => setLabel(e.target.value)} />
+          <input type="text" autoFocus value={label} list="new-arrow-labels" placeholder={other?.defaultLabel ?? 'A noun phrase, such as Edited Episode'} aria-label="Label of the new arrow" onChange={(e) => setLabel(e.target.value)} />
           <datalist id="new-arrow-labels">{existingLabels.map((l) => <option key={l} value={l} />)}</datalist>
         </label>
         <TargetSelect model={model} choices={choices} value={other?.key} onChange={setChosenKey} />

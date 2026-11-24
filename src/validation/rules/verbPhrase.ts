@@ -30,7 +30,7 @@ export const verbPhrase: Rule = {
         .map((fn) => ({
           diagramId,
           subject: { kind: 'function' as const, functionId: fn.id },
-          message: `${nodeNumber(model, fn.id)} "${fn.label}" should be a verb and its object, such as "Review Request"`,
+          message: `${nodeNumber(model, fn.id)} "${fn.label}" should be a verb and its object, such as "Edit Audio"`,
         })),
     ),
 };

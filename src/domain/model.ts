@@ -107,7 +107,7 @@ export interface ModelInfo {
   readonly purpose: string;
   readonly viewpoint: string;
   readonly context: string;
-  /** Prefix of the diagram numbers in the footer, for example "CC" in "CC-02". */
+  /** Prefix of the diagram numbers in the footer, for example "PE" in "PE-02". */
   readonly numberPrefix: string;
 }
 

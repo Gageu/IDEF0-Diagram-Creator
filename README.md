@@ -9,7 +9,7 @@ The design is in [docs/design-spec.md](docs/design-spec.md).
 All six milestones of the design spec are in place:
 
 - **Domain model** with commands, undo and redo, and JSON save and load. The
-  reference model in `examples/change_control_model.json` imports cleanly.
+  reference model in `examples/podcast_model.json` imports cleanly.
 - **Validation**: each IDEF0 rule is one object in a registry. Errors (a
   parent arrow missing from the child diagram, a function with no control or
   no output) and warnings (box count outside 3 to 6, duplicate labels, names
