@@ -1,6 +1,6 @@
 /**
  * Imports the diagram-by-diagram JSON shape of the reference pack
- * (`examples/change_control_model.json`) into the domain model.
+ * (`examples/podcast_model.json`) into the domain model.
  *
  * The pack repeats each boundary arrow on every diagram and stores node
  * numbers and ICOM codes. The model stores none of that: the importer links

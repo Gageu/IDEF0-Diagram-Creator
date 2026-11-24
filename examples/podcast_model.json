@@ -1,0 +1,126 @@
+{
+  "_about": "Logical content of the four example diagrams, with no coordinates. 'to'/'from' use box ids; 'boundary' means the arrow crosses the diagram border. A list in 'to' means the arrow branches. 'unbundles' lists the named branches of a bundled arrow.",
+  "model": {
+    "name": "Podcast Episode Production",
+    "purpose": "Describe the activities a small team performs to take one interview episode from idea to promoted release.",
+    "viewpoint": "Producer who plans the show and coordinates the production team.",
+    "context": "One interview episode, from planning to promotion. Guest booking, sponsorship sales and show branding are outside the boundary."
+  },
+  "diagrams": [
+    {
+      "node": "A-0",
+      "number": "PE-01",
+      "title": "Produce Podcast Episode",
+      "boxes": [
+        { "id": "A0", "label": "Produce Podcast Episode" }
+      ],
+      "arrows": [
+        { "label": "Episode idea", "role": "input", "icom": "I1", "from": "boundary", "to": "A0" },
+        { "label": "Guest availability", "role": "input", "icom": "I2", "from": "boundary", "to": "A0" },
+        { "label": "Editorial calendar", "role": "control", "icom": "C1", "from": "boundary", "to": "A0" },
+        { "label": "Style guide", "role": "control", "icom": "C2", "from": "boundary", "to": "A0" },
+        { "label": "Platform specifications", "role": "control", "icom": "C3", "from": "boundary", "to": "A0" },
+        { "label": "Published episode", "role": "output", "icom": "O1", "from": "A0", "to": "boundary" },
+        { "label": "Show notes", "role": "output", "icom": "O2", "from": "A0", "to": "boundary" },
+        { "label": "Audience report", "role": "output", "icom": "O3", "from": "A0", "to": "boundary" },
+        { "label": "Production team", "role": "mechanism", "icom": "M1", "from": "boundary", "to": "A0" },
+        { "label": "Recording studio", "role": "mechanism", "icom": "M2", "from": "boundary", "to": "A0" },
+        { "label": "Hosting platform", "role": "mechanism", "icom": "M3", "from": "boundary", "to": "A0" }
+      ]
+    },
+    {
+      "node": "A0",
+      "number": "PE-02",
+      "title": "Produce Podcast Episode",
+      "parent_box": "A0",
+      "boxes": [
+        { "id": "A1", "label": "Plan Episode" },
+        { "id": "A2", "label": "Record Episode", "decomposed": true },
+        { "id": "A3", "label": "Edit Audio" },
+        { "id": "A4", "label": "Publish Episode", "decomposed": true },
+        { "id": "A5", "label": "Promote Episode" }
+      ],
+      "arrows": [
+        { "label": "Episode idea", "role": "input", "icom": "I1", "from": "boundary", "to": "A1" },
+        { "label": "Guest availability", "role": "input", "icom": "I2", "from": "boundary", "to": "A1" },
+        { "label": "Editorial calendar", "role": "control", "icom": "C1", "from": "boundary", "to": ["A1", "A5"] },
+        { "label": "Style guide", "role": "control", "icom": "C2", "from": "boundary", "to": ["A3", "A4"] },
+        { "label": "Platform specifications", "role": "control", "icom": "C3", "from": "boundary", "to": "A4" },
+        { "label": "Recording schedule", "role": "input", "from": "A1", "to": "A2" },
+        { "label": "Episode outline", "role": "control", "from": "A1", "to": "A2" },
+        { "label": "Raw recordings", "role": "input", "from": "A2", "to": "A3" },
+        { "label": "Retake request", "role": "input", "from": "A3", "to": "A2", "feedback": true },
+        { "label": "Edited episode", "role": "input", "from": "A3", "to": "A4" },
+        { "label": "Published episode", "role": "output", "icom": "O1", "from": "A4", "to": "boundary" },
+        { "label": "Show notes", "role": "output", "icom": "O2", "from": "A4", "to": "boundary" },
+        { "label": "Release details", "role": "input", "from": "A4", "to": "A5" },
+        { "label": "Listener feedback", "role": "control", "from": "A5", "to": "A1", "feedback": true },
+        { "label": "Audience report", "role": "output", "icom": "O3", "from": "A5", "to": "boundary" },
+        {
+          "label": "Production team", "role": "mechanism", "icom": "M1", "from": "boundary", "layout_hint": "bottom bus",
+          "unbundles": [
+            { "label": "Producer", "to": "A1" },
+            { "label": "Host", "to": "A2" },
+            { "label": "Audio editor", "to": "A3" },
+            { "label": "Publisher", "to": "A4" },
+            { "label": "Community manager", "to": "A5" }
+          ]
+        },
+        { "label": "Recording studio", "role": "mechanism", "icom": "M2", "from": "boundary", "to": ["A2", "A3"], "layout_hint": "bottom bus" },
+        { "label": "Hosting platform", "role": "mechanism", "icom": "M3", "from": "boundary", "to": ["A4", "A5"], "layout_hint": "bottom bus" }
+      ]
+    },
+    {
+      "node": "A2",
+      "number": "PE-03",
+      "title": "Record Episode",
+      "parent_box": "A2",
+      "boxes": [
+        { "id": "A21", "label": "Set Up Session" },
+        { "id": "A22", "label": "Conduct Interview" },
+        { "id": "A23", "label": "Capture Retakes" }
+      ],
+      "arrows": [
+        { "label": "Recording schedule", "role": "input", "icom": "I1", "from": "boundary", "to": "A21" },
+        { "label": "Retake request", "role": "input", "icom": "I2", "from": "boundary", "to": "A23" },
+        { "label": "Episode outline", "role": "control", "icom": "C1", "from": "boundary", "to": ["A21", "A22", "A23"] },
+        { "label": "Ready session", "role": "input", "from": "A21", "to": "A22" },
+        { "label": "Interview takes", "role": "input", "from": "A22", "to": "A23" },
+        { "label": "Raw recordings", "role": "output", "icom": "O1", "from": "A23", "to": "boundary" },
+        { "label": "Host", "role": "mechanism", "icom": "M1", "from": "boundary", "to": ["A22", "A23"], "layout_hint": "bottom bus" },
+        { "label": "Recording studio", "role": "mechanism", "icom": "M2", "from": "boundary", "to": ["A21", "A22", "A23"], "layout_hint": "bottom bus" }
+      ]
+    },
+    {
+      "node": "A4",
+      "number": "PE-04",
+      "title": "Publish Episode",
+      "parent_box": "A4",
+      "boxes": [
+        { "id": "A41", "label": "Write Show Notes" },
+        { "id": "A42", "label": "Master Audio File" },
+        { "id": "A43", "label": "Upload Episode" },
+        { "id": "A44", "label": "Schedule Release" }
+      ],
+      "arrows": [
+        { "label": "Edited episode", "role": "input", "icom": "I1", "from": "boundary", "to": ["A41", "A42"] },
+        { "label": "Style guide", "role": "control", "icom": "C1", "from": "boundary", "to": "A41" },
+        {
+          "label": "Platform specifications", "role": "control", "icom": "C2", "from": "boundary", "layout_hint": "top bus",
+          "unbundles": [
+            { "label": "Loudness target", "to": "A42" },
+            { "label": "Metadata rules", "to": "A43" },
+            { "label": "Release windows", "to": "A44" }
+          ]
+        },
+        { "label": "Show notes", "role": "output", "icom": "O2", "from": "A41", "to": "boundary" },
+        { "label": "Mastered audio", "role": "input", "from": "A42", "to": "A43" },
+        { "label": "Uploaded episode", "role": "input", "from": "A43", "to": "A44" },
+        { "label": "Published episode", "role": "output", "icom": "O1", "from": "A44", "to": "boundary" },
+        { "label": "Release details", "role": "output", "icom": "O3", "from": "A44", "to": "boundary" },
+        { "label": "Publisher", "role": "mechanism", "icom": "M1", "from": "boundary", "to": ["A41", "A42", "A43", "A44"], "layout_hint": "bottom bus" },
+        { "label": "Hosting platform", "role": "mechanism", "icom": "M2", "from": "boundary", "to": ["A43", "A44"], "layout_hint": "bottom bus" }
+      ]
+    }
+  ]
+}

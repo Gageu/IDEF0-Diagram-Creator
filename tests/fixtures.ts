@@ -4,7 +4,7 @@ import type { Model } from '../src/domain';
 import { importReferencePack } from '../src/persistence';
 
 export const referencePackText = readFileSync(
-  fileURLToPath(new URL('../examples/change_control_model.json', import.meta.url)),
+  fileURLToPath(new URL('../examples/podcast_model.json', import.meta.url)),
   'utf8',
 );
 

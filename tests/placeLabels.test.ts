@@ -54,14 +54,14 @@ describe('place labels', () => {
     const state = place({
       boxes: [box('A1', 100, 100), box('A2', 300, 220)],
       routes: [arrow('a', p(250, 140), p(275, 140), p(275, 260), p(300, 260))],
-      anchors: [inside('a', 'Logged change request', p(250, 140))],
+      anchors: [inside('a', 'Recording schedule', p(250, 140))],
     });
     expect(state.defects).toEqual([]);
     expect(state.leaders).toEqual([]);
   });
 
   it('staggers boundary labels that would run into the next arrow', () => {
-    const top = (arrowId: string, x: number, code: string): LabelAnchor => ({ arrowId, text: 'Impact analysis checklists & templates', code, point: p(x, 20), edge: 'top', run: 'vertical' });
+    const top = (arrowId: string, x: number, code: string): LabelAnchor => ({ arrowId, text: 'Platform specifications & templates', code, point: p(x, 20), edge: 'top', run: 'vertical' });
     const state = place({
       routes: [arrow('a', p(300, 20), p(300, 300)), arrow('b', p(340, 20), p(340, 300)), arrow('c', p(380, 20), p(380, 300))],
       anchors: [top('a', 300, 'C1'), top('b', 340, 'C2'), top('c', 380, 'C3')],
@@ -78,7 +78,7 @@ describe('place labels', () => {
     const state = place({
       boxes: [box('A1', 100, 200), box('A2', 270, 200)],
       routes: [arrow('a', p(250, 240), p(270, 240))],
-      anchors: [inside('a', 'Approved change request', p(250, 240))],
+      anchors: [inside('a', 'Edited episode master', p(250, 240))],
     });
     expect(state.leaders).toHaveLength(1);
     expect(state.leaders[0]!.to).toEqual(p(260, 240));

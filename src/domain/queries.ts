@@ -81,7 +81,7 @@ export function diagramTitle(model: Model, diagramId: DiagramId): string {
   return getFunction(model, diagramId === CONTEXT_DIAGRAM ? model.rootId : diagramId).label;
 }
 
-/** Footer number, for example "CC-02": the prefix plus the diagram's position. */
+/** Footer number, for example "PE-02": the prefix plus the diagram's position. */
 export function diagramNumber(model: Model, diagramId: DiagramId): string {
   const index = diagramIds(model).indexOf(diagramId);
   if (index < 0) throw new DomainError(`Unknown diagram "${diagramId}"`);
