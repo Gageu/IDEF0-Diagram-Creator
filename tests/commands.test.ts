@@ -3,6 +3,7 @@ import {
   addArrow,
   addArrowTarget,
   addFunction,
+  arrowsAt,
   arrowsOn,
   boundaryCode,
   canRedo,
@@ -128,6 +129,42 @@ describe('boundary inheritance', () => {
     expect(() => addArrow({ diagramId: CONTEXT_DIAGRAM, label: 'X', sources: [{ kind: 'function', functionId: 'boil' }], targets: [{ kind: 'boundary', link: { kind: 'external' } }] }).apply(model)).toThrow(/not on the arrow's diagram/);
     expect(() => addArrow({ diagramId: 'root', label: 'X', sources: [{ kind: 'function', functionId: 'boil' }], targets: [] }).apply(model)).toThrow(/no target/);
     expect(() => addArrow({ diagramId: 'boil', label: 'X', sources: [{ kind: 'function', functionId: 'boil' }], targets: [{ kind: 'function', functionId: 'steep', role: 'input' }] }).apply(model)).toThrow(/diagram "boil" does not exist/);
+  });
+});
+
+describe('side order', () => {
+  const fn = (functionId: string, role: 'input' | 'control' | 'mechanism') => ({ kind: 'function' as const, functionId, role });
+  const from = (functionId: string) => ({ kind: 'function' as const, functionId });
+  const inherited = (parentArrowId: string) => ({ kind: 'boundary' as const, link: { kind: 'inherited' as const, parentArrowId } });
+  const on = (id: string, sources: Parameters<typeof addArrow>[0]['sources'], targets: Parameters<typeof addArrow>[0]['targets']): Command =>
+    addArrow({ id, diagramId: 'root', label: id, sources, targets });
+  // Added in an order that differs from the convention on every side.
+  const model = run(
+    sample(),
+    on('redo', [from('pour')], [fn('steep', 'input'), fn('steep', 'control')]),
+    on('water-in', [inherited('water')], [fn('steep', 'input')]),
+    on('recipe-in', [inherited('recipe')], [fn('steep', 'control')]),
+    on('hot', [from('boil')], [fn('steep', 'input'), fn('steep', 'control')]),
+    on('back', [from('steep')], [fn('boil', 'input')]),
+    on('near', [from('steep')], [fn('pour', 'input')]),
+    on('out', [from('steep')], [{ kind: 'boundary', link: { kind: 'inherited', parentArrowId: 'tea' } }]),
+  );
+  const side = (role: 'input' | 'control' | 'output'): string[] => arrowsAt(model, 'steep', role).map((a) => a.id);
+
+  it('puts inputs from earlier boxes first, then the boundary, then feedback', () => {
+    expect(side('input')).toEqual(['hot', 'water-in', 'redo']);
+    expect(side('control')).toEqual(['hot', 'recipe-in', 'redo']);
+  });
+
+  it('puts the output that reaches farthest first and feedback last', () => {
+    expect(side('output')).toEqual(['out', 'near', 'back']);
+  });
+
+  it('gives a child diagram its ICOM codes in that same order', () => {
+    const child = addFunction({ parentId: 'steep', label: 'Add Leaves', id: 'leaves' }).apply(model);
+    expect(inheritedBoundary(child, 'steep').map((b) => `${b.code} ${b.label}`)).toEqual([
+      'I1 hot', 'I2 water-in', 'I3 redo', 'C1 hot', 'C2 recipe-in', 'C3 redo', 'O1 out', 'O2 near', 'O3 back',
+    ]);
   });
 });
 
