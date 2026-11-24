@@ -67,6 +67,8 @@ export function createNaiveRouter(options: LayoutOptions['routing']): Router {
         return [a, { x: a.x + stub, y: a.y }, { x: a.x + stub, y: above }, { x: b.x, y: above }, b];
       }
       case 'east>north': {
+        // Already below the end point: one corner, as on a bus lane.
+        if (a.y > b.y && b.x > a.x) return [a, { x: b.x, y: a.y }, b];
         const under = Math.max(below, b.y + loopClearance);
         return [a, { x: a.x + stub, y: a.y }, { x: a.x + stub, y: under }, { x: b.x, y: under }, b];
       }

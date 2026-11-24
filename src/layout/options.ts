@@ -34,6 +34,14 @@ export interface LayoutOptions {
     /** Free space kept after a label before the next boundary arrow. */
     readonly clearance: number;
   };
+  /** Lanes beside the frame edges that carry the branches of boundary arrows. */
+  readonly lanes: {
+    /** Distance from the left or bottom frame edge to the first lane. */
+    readonly inset: number;
+    /** The same at the top edge, where the lane must clear the boundary labels. */
+    readonly topInset: number;
+    readonly spacing: number;
+  };
   readonly routing: {
     /** How far an arrow runs straight out of or into a box before it may turn. */
     readonly stub: number;
@@ -60,5 +68,6 @@ export const referenceLayoutOptions: LayoutOptions = {
   staircase: { gapX: 50, gapY: 40 },
   margin: { left: 130, right: 130, top: 110, bottom: 110 },
   label: { wrapWidth: 120, codeOffset: 6, codeWidth: 20, lineGap: 6, clearance: 16 },
+  lanes: { inset: 50, topInset: 75, spacing: 20 },
   routing: { stub: 25, loopClearance: 30, jogClearance: 60, jogSpacing: 50 },
 };

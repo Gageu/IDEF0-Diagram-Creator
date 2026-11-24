@@ -8,10 +8,12 @@ import {
   approximateTextMeasurer,
   createAssignSlotsStage,
   createLayoutPipeline,
+  createMergeBusesStage,
   createNaiveRouter,
   createPlaceBoxesStage,
   createPlaceLabelsStage,
   createPlaceNoteStage,
+  createPlanConnectionsStage,
   createRouteArrowsStage,
   referenceLayoutOptions,
   type LayoutDeps,
@@ -28,8 +30,10 @@ const deps: LayoutDeps = {
 
 export const layoutPipeline: LayoutPipeline = createLayoutPipeline([
   createPlaceBoxesStage(deps),
-  createAssignSlotsStage(deps),
+  createAssignSlotsStage(),
+  createPlanConnectionsStage(deps),
   createRouteArrowsStage(createNaiveRouter(deps.options.routing)),
+  createMergeBusesStage(),
   createPlaceLabelsStage(deps),
   createPlaceNoteStage(deps),
 ]);

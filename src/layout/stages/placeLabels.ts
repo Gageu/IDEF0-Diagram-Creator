@@ -3,10 +3,9 @@ import { verticalLabelLines, type LayoutDeps } from '../boundaryLabel';
 import type { LayoutStage } from '../state';
 
 /**
- * Stage 6, first version: puts each arrow's label at a fixed spot relative to
- * where the arrow starts or ends, and each ICOM code at the frame edge. It
- * does not yet look for collisions; that is the label placer of a later
- * milestone.
+ * Stage 6, first version: puts each label at a fixed spot relative to its
+ * anchor, and each ICOM code at the frame edge. It does not yet look for
+ * collisions; that is the label placer of a later milestone.
  */
 export function createPlaceLabelsStage(deps: LayoutDeps): LayoutStage {
   const { codeOffset, codeWidth, lineGap } = deps.options.label;
@@ -19,36 +18,28 @@ export function createPlaceLabelsStage(deps: LayoutDeps): LayoutStage {
     run(state) {
       const { frame } = state;
       const texts: TextGeometry[] = [];
-      const labelled = new Set<string>();
-      const coded = new Set<string>();
-      const code = (value: string | undefined, x: number, y: number, anchor: 'start' | 'end'): void => {
-        if (value === undefined || coded.has(value)) return;
-        coded.add(value);
-        texts.push({ x, y, lines: [value], style: 'icomCode', anchor });
+      const add = (x: number, y: number, lines: string[], anchor: 'start' | 'end', style: 'arrowLabel' | 'icomCode' = 'arrowLabel'): void => {
+        if (lines.some((line) => line !== '')) texts.push({ x, y, lines, style, anchor });
       };
 
-      for (const c of state.connections) {
-        // A branching arrow is labelled once, on its first run.
-        const label = labelled.has(c.arrowId) || c.label === '' ? undefined : c.label;
-        labelled.add(c.arrowId);
-        const add = (x: number, y: number, lines: string[], anchor: 'start' | 'end'): void => {
-          if (label !== undefined) texts.push({ x, y, lines, style: 'arrowLabel', anchor });
-        };
-        const { x, y } = c.from.point;
-
-        if (c.toBoundary) {
-          const baseline = c.to.point.y - lineGap + 1;
-          code(c.toBoundary.code, right(frame) - codeOffset, baseline, 'end');
-          add(right(frame) - codeOffset - codeWidth - 4, baseline, [c.label], 'end');
-        } else if (c.fromBoundary?.side === 'left') {
-          code(c.fromBoundary.code, x + codeOffset, y - lineGap, 'start');
-          add(x + codeOffset + codeWidth, y - lineGap, [c.label], 'start');
-        } else if (c.fromBoundary) {
-          const baseline = c.fromBoundary.side === 'top' ? frame.y + topLabelDrop : bottom(frame) - bottomLabelRise;
-          code(c.fromBoundary.code, x + codeOffset, baseline, 'start');
-          add(x + codeOffset + codeWidth, baseline, verticalLabelLines(c.label, deps), 'start');
+      for (const a of state.anchors) {
+        const { x, y } = a.point;
+        const code = a.code === undefined ? [] : [a.code];
+        if (a.edge === 'right') {
+          const baseline = y - lineGap + 1;
+          add(right(frame) - codeOffset, baseline, code, 'end', 'icomCode');
+          add(right(frame) - codeOffset - codeWidth - 4, baseline, [a.text], 'end');
+        } else if (a.edge === 'left') {
+          add(x + codeOffset, y - lineGap, code, 'start', 'icomCode');
+          add(x + codeOffset + codeWidth, y - lineGap, [a.text], 'start');
+        } else if (a.edge === 'top' || a.edge === 'bottom') {
+          const baseline = a.edge === 'top' ? frame.y + topLabelDrop : bottom(frame) - bottomLabelRise;
+          add(x + codeOffset, baseline, code, 'start', 'icomCode');
+          add(x + codeOffset + codeWidth, baseline, verticalLabelLines(a.text, deps), 'start');
+        } else if (a.run === 'horizontal') {
+          add(x + 8, y - lineGap, [a.text], 'start');
         } else {
-          add(x + 8, y - lineGap, [c.label], 'start');
+          add(x + codeOffset, y, verticalLabelLines(a.text, deps), 'start');
         }
       }
       return { ...state, texts: [...state.texts, ...texts] };

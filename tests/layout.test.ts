@@ -77,6 +77,34 @@ describe('A-0 context diagram of the reference model', () => {
   });
 });
 
+describe('A0 diagram of the reference model', () => {
+  const g = layoutPipeline.layout(model, model.rootId);
+  const crossings = (edge: (p: Point) => boolean): number => g.arrows.filter((a) => edge(a.points[0]!) || edge(a.points[a.points.length - 1]!)).length;
+
+  it('brings each boundary arrow across the frame exactly once', () => {
+    expect(crossings((p) => p.x === g.frame.x)).toBe(3); // I1..I3, though I3 feeds two boxes
+    expect(crossings((p) => p.y === g.frame.y)).toBe(5); // C1..C5, though C3 feeds two boxes
+    expect(crossings((p) => p.y === bottom(g.frame))).toBe(2); // M1 feeds six boxes, M2 splits into five roles
+    expect(crossings((p) => p.x === right(g.frame))).toBe(5); // O1..O5
+  });
+
+  it('shows each ICOM code once and labels each role of the split mechanism', () => {
+    const codes = g.texts.filter((t) => t.style === 'icomCode').map((t) => t.lines[0]);
+    expect(codes).toHaveLength(15);
+    expect(new Set(codes).size).toBe(15);
+    const labels = g.texts.filter((t) => t.style === 'arrowLabel').map((t) => t.lines.join(' '));
+    expect(labels).toEqual(expect.arrayContaining(['Change control roles', 'Originator & Request Receiver', 'Evaluator', 'CCB', 'Modifier', 'Verifier']));
+    expect(labels.filter((l) => l === 'RM tool')).toHaveLength(1);
+  });
+
+  it('gives every box side its arrowheads', () => {
+    const heads = g.arrows.filter((a) => a.head).length;
+    // 15 box-to-box and boundary-to-box ends, 5 outputs to the frame, 6 + 5 mechanism branches... counted from the model:
+    const ends = model.arrows.filter((a) => a.diagramId === model.rootId).reduce((n, a) => n + a.targets.length * a.sources.length, 0);
+    expect(heads).toBe(ends);
+  });
+});
+
 describe.each(diagramIds(model).map((id) => [diagramNode(model, id), id] as const))('diagram %s', (node, id) => {
   const g: DiagramGeometry = layoutPipeline.layout(model, id);
 

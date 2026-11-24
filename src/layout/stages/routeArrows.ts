@@ -17,7 +17,7 @@ export function createRouteArrowsStage(router: Router): LayoutStage {
       });
       return {
         ...state,
-        routes: state.connections.map((c, i) => ({ arrowId: c.arrowId, points: paths[i] ?? [c.from.point, c.to.point], head: true })),
+        routes: state.connections.map((c, i) => ({ arrowId: c.arrowId, points: paths[i] ?? [c.from.point, c.to.point], head: c.head })),
       };
     },
   };

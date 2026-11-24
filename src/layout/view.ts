@@ -4,6 +4,7 @@
  * resolved. Later stages work from this view and never read the model.
  */
 import {
+  arrowsAt,
   arrowsOn,
   boundaryCode,
   boundarySourceRole,
@@ -12,6 +13,7 @@ import {
   diagramNumber,
   diagramTitle,
   functionsOn,
+  getArrow,
   inheritedBoundary,
   nodeNumber,
   type DiagramId,
@@ -29,11 +31,26 @@ export interface ViewBox {
   readonly id: string;
   readonly label: string;
   readonly number: string;
+  /** Ids of the arrows on each side, in order: top to bottom, or left to right. */
+  readonly sides: Readonly<Record<Side, readonly string[]>>;
+}
+
+/** The parent arrow that several split arrows on this diagram fork from or join into. */
+export interface ViewBundle {
+  readonly id: string;
+  readonly label: string;
 }
 
 export type ViewEnd =
   | { readonly kind: 'box'; readonly boxId: string; readonly side: Side }
-  | { readonly kind: 'boundary'; readonly side: Side; readonly code: string | undefined; readonly tunneled: boolean };
+  | {
+      readonly kind: 'boundary';
+      readonly side: Side;
+      readonly code: string | undefined;
+      readonly tunneled: boolean;
+      /** Set when the arrow is a split of a parent arrow. */
+      readonly bundle: ViewBundle | undefined;
+    };
 
 export interface ViewArrow {
   readonly id: string;
@@ -58,6 +75,10 @@ export interface DiagramView {
 
 export function buildDiagramView(model: Model, diagramId: DiagramId): DiagramView {
   const isContext = diagramId === CONTEXT_DIAGRAM;
+  const bundle = (link: { readonly kind: string; readonly parentArrowId?: string }): ViewBundle | undefined => {
+    if (link.kind !== 'split' || link.parentArrowId === undefined) return undefined;
+    return { id: link.parentArrowId, label: getArrow(model, link.parentArrowId).label };
+  };
   const arrows = arrowsOn(model, diagramId).map((arrow): ViewArrow => {
     const sourceRole = boundarySourceRole(model, arrow);
     return {
@@ -71,12 +92,19 @@ export function buildDiagramView(model: Model, diagramId: DiagramId): DiagramVie
           side: SIDE_OF_ROLE[sourceRole],
           code: boundaryCode(model, arrow, 'source'),
           tunneled: source.link.kind === 'tunneled',
+          bundle: bundle(source.link),
         }];
       }),
       targets: arrow.targets.map((target): ViewEnd =>
         target.kind === 'function'
           ? { kind: 'box', boxId: target.functionId, side: SIDE_OF_ROLE[target.role] }
-          : { kind: 'boundary', side: 'right', code: boundaryCode(model, arrow, 'target'), tunneled: target.link.kind === 'tunneled' },
+          : {
+              kind: 'boundary',
+              side: 'right',
+              code: boundaryCode(model, arrow, 'target'),
+              tunneled: target.link.kind === 'tunneled',
+              bundle: bundle(target.link),
+            },
       ),
     };
   });
@@ -93,7 +121,17 @@ export function buildDiagramView(model: Model, diagramId: DiagramId): DiagramVie
     node: diagramNode(model, diagramId),
     title: diagramTitle(model, diagramId),
     number: diagramNumber(model, diagramId),
-    boxes: functionsOn(model, diagramId).map((fn) => ({ id: fn.id, label: fn.label, number: nodeNumber(model, fn.id) })),
+    boxes: functionsOn(model, diagramId).map((fn) => ({
+      id: fn.id,
+      label: fn.label,
+      number: nodeNumber(model, fn.id),
+      sides: {
+        left: arrowsAt(model, fn.id, 'input').map((a) => a.id),
+        top: arrowsAt(model, fn.id, 'control').map((a) => a.id),
+        right: arrowsAt(model, fn.id, 'output').map((a) => a.id),
+        bottom: arrowsAt(model, fn.id, 'mechanism').map((a) => a.id),
+      },
+    })),
     arrows,
     unconnected: inheritedBoundary(model, diagramId).filter((b) => b.state === 'unconnected'),
     note: isContext ? note : [],
