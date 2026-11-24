@@ -6,19 +6,23 @@ The design is in [docs/design-spec.md](docs/design-spec.md).
 
 ## Status
 
-Milestones 1 to 3 of the design spec are in place:
+Milestones 1 to 4 of the design spec are in place:
 
 - **Domain model** with commands, undo and redo, and JSON save and load. The
   reference model in `examples/change_control_model.json` imports cleanly.
 - **SVG renderer** ported from the reference pack's `idef0.py`.
 - **Layout pipeline**: staircase box placement, side slots ordered to avoid
   crossings, boundary arrows drawn as rakes with shared trunks, and
-  obstacle-avoiding routing through libavoid. On all four reference diagrams
-  no arrow passes through a box and no two arrows share a line.
+  obstacle-avoiding routing through libavoid.
+- **Label placement**: each label is put beside its own arrow where nothing
+  else is drawn, and gets a leader squiggle only when no such spot exists.
+- **Quality gate**: a check stage records every defect (an arrow through a
+  box, overlapping labels, anything outside the frame), and the pipeline
+  retries with more room until the drawing is clean. All four reference
+  diagrams, and generated diagrams of 1 to 8 boxes, come out with no defects.
 
-Labels are still placed at fixed spots and collide on the busier diagrams;
-label placement and the quality gate are milestone 4. The browser app is a
-read-only preview of the reference model for now; the editor is milestone 5.
+The browser app is a read-only preview of the reference model for now; the
+editor is milestone 5. Tunnel parentheses are not drawn yet.
 
 ## Getting started
 

@@ -1,4 +1,4 @@
-import type { ArrowGeometry, Point, Rect, Size, TextGeometry } from '../geometry/geometry';
+import type { ArrowGeometry, LayoutDefect, LeaderGeometry, Point, Rect, Size, TextGeometry } from '../geometry/geometry';
 import type { DiagramView, Side } from './view';
 
 export interface PlacedBox {
@@ -65,6 +65,8 @@ export interface LayoutState {
   readonly anchors: readonly LabelAnchor[];
   readonly routes: readonly ArrowGeometry[];
   readonly texts: readonly TextGeometry[];
+  readonly leaders: readonly LeaderGeometry[];
+  readonly defects: readonly LayoutDefect[];
 }
 
 export function slotKey(boxId: string, side: Side, arrowId: string): string {
@@ -79,5 +81,5 @@ export interface LayoutStage {
 
 export function initialState(view: DiagramView): LayoutState {
   const empty = { x: 0, y: 0, width: 0, height: 0 };
-  return { view, size: empty, frame: empty, boxes: [], slots: {}, connections: [], anchors: [], routes: [], texts: [] };
+  return { view, size: empty, frame: empty, boxes: [], slots: {}, connections: [], anchors: [], routes: [], texts: [], leaders: [], defects: [] };
 }

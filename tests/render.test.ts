@@ -11,6 +11,8 @@ function geometry(overrides: Partial<DiagramGeometry>): DiagramGeometry {
     boxes: [],
     arrows: [],
     texts: [],
+    leaders: [],
+    defects: [],
     ...overrides,
   };
 }
@@ -36,6 +38,11 @@ describe('renderSvg', () => {
     expect(svg).toContain('x="550" y="323"');
     expect(svg).toContain('x="675" y="375" font-family="Liberation Sans, Arial, Helvetica, sans-serif" font-size="11" text-anchor="end" font-weight="bold" fill="#000">A0</text>');
     expect(svg).not.toMatch(/\brx=/);
+  });
+
+  it('draws a leader as a thin zigzag from the label to the arrow', () => {
+    const svg = renderSvg(geometry({ leaders: [{ from: { x: 100, y: 100 }, to: { x: 200, y: 100 } }] }), referenceTheme);
+    expect(svg).toContain('<path d="M100,100 L140,104 L160,96 L200,100" fill="none" stroke="#000" stroke-width="0.8"/>');
   });
 
   it('draws the NODE / TITLE / NUMBER footer below the frame and escapes text', () => {

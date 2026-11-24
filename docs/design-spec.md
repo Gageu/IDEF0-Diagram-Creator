@@ -152,8 +152,9 @@ Layout is a chain of stages, each a pure function from one layout state to the n
 | 4 | Plan connections | Turns each arrow into point-to-point connections for the router. A boundary arrow that serves several boxes becomes a rake: straight to its first box, with a lane beside the frame edge carrying the branches | B8 |
 | 5 | Route | Orthogonal routing around boxes through the `Router` interface | B6, D3 |
 | 6 | Merge buses | Draws the path that connections of one arrow share only once, so branches start at T-junctions and joins end on their trunk | B8 |
-| 7 | Place labels | Puts each label beside a segment, never on a line or box; falls back to a leader squiggle | B10 |
-| 8 | Check | Detects arrow-through-box, label overlap and out-of-frame geometry | Quality gate |
+| 7 | Place note | Puts the diagram note in the largest free corner, before labels so that labels keep clear of it | |
+| 8 | Place labels | Tries a ranked list of spots beside each arrow's own segments and takes the first that touches no box, line or other label; falls back to a leader squiggle | B10 |
+| 9 | Check | Records arrow-through-box, a label on an arrow, box or other label, and out-of-frame geometry as defects on the geometry | Quality gate |
 
 **Side order.** The order of arrows along a box side is a rule over the model, not a layout result: outputs that reach farthest come first, inputs from earlier boxes sit above boundary inputs, feedback comes last. It lives in the domain (`arrowsAt`) because ICOM codes on the child diagram follow the same order, and the two must never disagree.
 
@@ -161,7 +162,7 @@ Layout is a chain of stages, each a pure function from one layout state to the n
 
 **Interfaces.** Every stage implements `LayoutStage { name, run(state): LayoutState }`. The router sits behind its own `Router` interface with a libavoid implementation and an ELK implementation, chosen in one configuration object.
 
-**Quality gate.** If the check stage finds a defect, the pipeline retries with wider gaps and a larger canvas, up to a fixed number of attempts. A defect that survives is reported as a layout warning on the diagram, so a bad drawing is never exported silently. This loop is what replaces manual rearranging.
+**Quality gate.** The gate is a decorator around the pipeline, so the stages know nothing about retries. If the check stage finds a defect, or a label needed a leader line, the gate runs the pipeline again with wider gaps and a larger canvas, up to a fixed number of attempts, and keeps the attempt with the lowest penalty (a defect weighs far more than a leader). A defect that survives stays on the geometry as a layout warning, so a bad drawing is never exported silently. This loop is what replaces manual rearranging.
 
 **Output.** The final state is a plain geometry description (rectangles, polylines, text anchors) with no SVG in it, which is what keeps renderers and exporters independent of layout.
 

@@ -10,6 +10,7 @@ import {
   type ArrowGeometry,
   type BoxGeometry,
   type DiagramGeometry,
+  type LeaderGeometry,
   type Point,
   type TextAnchor,
 } from '../geometry/geometry';
@@ -94,6 +95,15 @@ function arrow(theme: Theme, a: ArrowGeometry): string {
   return svg;
 }
 
+/** A leader is the IDEF0 squiggle: a thin line with one zigzag, from a label to its arrow. */
+function leader(theme: Theme, l: LeaderGeometry): string {
+  const [dx, dy] = [l.to.x - l.from.x, l.to.y - l.from.y];
+  const length = Math.hypot(dx, dy) || 1;
+  const [nx, ny] = [(-dy / length) * 4, (dx / length) * 4];
+  const at = (t: number, side: number): string => `${n(l.from.x + dx * t + nx * side)},${n(l.from.y + dy * t + ny * side)}`;
+  return `<path d="M${at(0, 0)} L${at(0.4, 1)} L${at(0.6, -1)} L${at(1, 0)}" fill="none" stroke="${theme.ink}" stroke-width="${theme.leader.strokeWidth}"/>`;
+}
+
 function footer(theme: Theme, g: DiagramGeometry): string {
   const f = theme.footer;
   const top = bottom(g.frame);
@@ -122,6 +132,7 @@ export function renderSvg(geometry: DiagramGeometry, theme: Theme): string {
     `<rect x="${n(frame.x)}" y="${n(frame.y)}" width="${n(frame.width)}" height="${n(frame.height)}" fill="none" stroke="${theme.ink}" stroke-width="${theme.frame.strokeWidth}"/>` +
     geometry.boxes.map((b) => box(theme, b)).join('') +
     geometry.arrows.map((a) => arrow(theme, a)).join('') +
+    geometry.leaders.map((l) => leader(theme, l)).join('') +
     geometry.texts.map((t) => lines(theme, t.x, t.y, t.lines, t.style, t.anchor)).join('') +
     footer(theme, geometry) +
     '</svg>'

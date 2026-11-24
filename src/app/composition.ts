@@ -7,6 +7,7 @@ import type { DiagramId, Model } from '../domain';
 import {
   approximateTextMeasurer,
   createAssignSlotsStage,
+  createCheckLayoutStage,
   createLayoutPipeline,
   createLibavoidRouter,
   createMergeBusesStage,
@@ -17,22 +18,25 @@ import {
   createPlanConnectionsStage,
   createRouteArrowsStage,
   referenceLayoutOptions,
+  widenGaps,
+  withQualityGate,
   type LayoutDeps,
+  type LayoutOptions,
   type LayoutPipeline,
   type Router,
 } from '../layout';
 import { renderSvg } from '../render/svgRenderer';
 import { referenceTheme } from '../theme/theme';
 
-const deps: LayoutDeps = {
-  options: referenceLayoutOptions,
-  theme: referenceTheme,
-  measurer: approximateTextMeasurer,
-};
+export const theme = referenceTheme;
+
+function layoutDeps(options: LayoutOptions): LayoutDeps {
+  return { options, theme, measurer: approximateTextMeasurer };
+}
 
 /** The router with no dependencies: fixed path shapes, no obstacle search. */
 export function naiveRouter(): Router {
-  return createNaiveRouter(deps.options.routing);
+  return createNaiveRouter(referenceLayoutOptions.routing);
 }
 
 /**
@@ -42,22 +46,34 @@ export function naiveRouter(): Router {
 export function loadRouter(wasmUrl?: string): Promise<Router> {
   return createLibavoidRouter({
     ...(wasmUrl === undefined ? {} : { wasmUrl }),
-    boxClearance: deps.options.routing.boxClearance,
-    arrowSpacing: deps.options.routing.arrowSpacing,
+    boxClearance: referenceLayoutOptions.routing.boxClearance,
+    arrowSpacing: referenceLayoutOptions.routing.arrowSpacing,
     fallback: naiveRouter(),
   });
 }
 
-export function createPipeline(router: Router): LayoutPipeline {
+/** One pass through every stage with the given distances. */
+function createSinglePassPipeline(router: Router, options: LayoutOptions): LayoutPipeline {
+  const deps = layoutDeps(options);
   return createLayoutPipeline([
     createPlaceBoxesStage(deps),
     createAssignSlotsStage(),
     createPlanConnectionsStage(deps),
     createRouteArrowsStage(router),
     createMergeBusesStage(),
-    createPlaceLabelsStage(deps),
     createPlaceNoteStage(deps),
+    createPlaceLabelsStage(deps),
+    createCheckLayoutStage(deps),
   ]);
+}
+
+/** The full layout: the stages above, retried with more room while the check stage finds problems. */
+export function createPipeline(router: Router): LayoutPipeline {
+  return withQualityGate((options) => createSinglePassPipeline(router, options), {
+    baseOptions: referenceLayoutOptions,
+    maxAttempts: 4,
+    relax: widenGaps,
+  });
 }
 
 export type DrawDiagram = (model: Model, diagramId: DiagramId) => string;
@@ -65,5 +81,5 @@ export type DrawDiagram = (model: Model, diagramId: DiagramId) => string;
 /** Model in, SVG string out: the preview and the export are this same string. */
 export function createDrawDiagram(router: Router): DrawDiagram {
   const pipeline = createPipeline(router);
-  return (model, diagramId) => renderSvg(pipeline.layout(model, diagramId), deps.theme);
+  return (model, diagramId) => renderSvg(pipeline.layout(model, diagramId), theme);
 }

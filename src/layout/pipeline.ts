@@ -35,5 +35,7 @@ function toGeometry(state: LayoutState): DiagramGeometry {
     boxes: state.boxes,
     arrows: state.routes,
     texts: state.texts,
+    leaders: state.leaders,
+    defects: state.defects,
   };
 }
