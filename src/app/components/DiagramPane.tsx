@@ -78,6 +78,16 @@ export function DiagramPane({ screen, drawn, error }: { screen: Screen; drawn: D
     return () => element.removeEventListener('wheel', onWheel);
   }, [zoomAt]);
 
+  /**
+   * Every press on the pane starts clean, before anything inside it sees the
+   * press. Without this, a press the connection handle keeps to itself would
+   * leave the last pan's state in place, and moving the pointer would pan
+   * from there.
+   */
+  const onPress = (): void => {
+    drag.current = undefined;
+    suppressClick.current = false;
+  };
   const onPointerDown = (event: PointerEvent<HTMLDivElement>): void => {
     if (event.button !== 0) return;
     drag.current = { startX: event.clientX, startY: event.clientY, origin: view, moved: false };
@@ -137,7 +147,7 @@ export function DiagramPane({ screen, drawn, error }: { screen: Screen; drawn: D
           <span><strong>Layout warning.</strong> The automatic layout could not avoid: {defects.map((d) => d.message).join('; ')}.</span>
         </div>
       )}
-      <div className="canvas-viewport" ref={viewport} onPointerDownCapture={() => { suppressClick.current = false; }} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onClick={onClick} onDoubleClick={onDoubleClick} onPointerLeave={() => setHoverId(undefined)} onContextMenu={onContextMenu}>
+      <div className="canvas-viewport" ref={viewport} onPointerDownCapture={onPress} onPointerDown={onPointerDown} onPointerMove={onPointerMove} onClick={onClick} onDoubleClick={onDoubleClick} onPointerLeave={() => setHoverId(undefined)} onContextMenu={onContextMenu}>
         <style>{highlightCss(state.selection)}</style>
         {error !== undefined && <p role="alert" className="canvas-message">This diagram could not be drawn: {error}</p>}
         {drawn === undefined && error === undefined && <p className="canvas-message">Loading the arrow router…</p>}
