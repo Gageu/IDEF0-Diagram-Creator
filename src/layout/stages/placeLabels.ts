@@ -3,7 +3,6 @@ import {
   contains,
   grow,
   intersects,
-  right,
   segmentRect,
   type LeaderGeometry,
   type Point,
@@ -63,7 +62,7 @@ export function createPlaceLabelsStage(deps: LayoutDeps): LayoutStage {
         const texts =
           a.edge === 'left'
             ? [...(a.code ? [codeText(x + codeOffset, baseline, a.code, 'start')] : []), arrowText(x + codeOffset + (a.code ? codeWidth : 0), baseline, [a.text], 'start')]
-            : [...(a.code ? [codeText(right(frame) - codeOffset, baseline, a.code, 'end')] : []), arrowText(right(frame) - codeOffset - (a.code ? codeWidth + 4 : 0), baseline, [a.text], 'end')];
+            : [...(a.code ? [codeText(x - codeOffset, baseline, a.code, 'end')] : []), arrowText(x - codeOffset - (a.code ? codeWidth + 4 : 0), baseline, [a.text], 'end')];
         candidates.push({ texts, cost: i * 10 });
       });
       return candidates;
@@ -137,6 +136,11 @@ export function createPlaceLabelsStage(deps: LayoutDeps): LayoutStage {
         ...state.boxes.map((b) => grow(b.rect, pad)),
         ...state.routes.flatMap((r) => r.points.slice(1).map((p, i) => segmentRect(r.points[i]!, p, pad))),
         ...state.texts.map((t) => grow(textBounds(t, deps), pad)),
+        ...state.tunnels.map((t) => {
+          const { near, far, halfHeight } = deps.theme.tunnel;
+          const [a, b] = [near - 4, far + 4].map((d) => ({ x: t.at.x + t.inward.x * d, y: t.at.y + t.inward.y * d }));
+          return segmentRect(a!, b!, halfHeight + pad);
+        }),
       ];
       const inside = grow(state.frame, -pad);
       const isFree = (rects: readonly Rect[]): boolean => rects.every((r) => contains(inside, r) && !blocked.some((b) => intersects(r, b)));
@@ -149,8 +153,8 @@ export function createPlaceLabelsStage(deps: LayoutDeps): LayoutStage {
 
       const texts: TextGeometry[] = [];
       const leaders: LeaderGeometry[] = [];
-      const place = (placed: readonly TextGeometry[]): void => {
-        texts.push(...placed);
+      const place = (placed: readonly TextGeometry[], arrowId: string): void => {
+        texts.push(...placed.map((t) => ({ ...t, arrowId })));
         blocked.push(...bounds(placed).map((r) => grow(r, pad)));
       };
 
@@ -162,17 +166,17 @@ export function createPlaceLabelsStage(deps: LayoutDeps): LayoutStage {
         if (candidates.length === 0) continue;
         const fit = candidates.find((c) => isFree(bounds(c.texts)));
         if (fit) {
-          place(fit.texts);
+          place(fit.texts, anchor.arrowId);
           continue;
         }
         // An ICOM code is short and stays at the frame even when its label has to move away.
         const codeOnly = anchor.code === undefined ? undefined : edgeCandidates({ ...anchor, text: '' }, state).map((c) => ({ ...c, texts: withoutEmpty(c.texts) })).find((c) => isFree(bounds(c.texts)));
         const led = withLeader(anchor);
         if (led && (anchor.code === undefined || codeOnly)) {
-          place([...(codeOnly?.texts ?? []), ...led.texts]);
+          place([...(codeOnly?.texts ?? []), ...led.texts], anchor.arrowId);
           leaders.push(led.leader);
         } else if (candidates[0]) {
-          place(candidates[0].texts); // Nowhere is free; the check stage reports it.
+          place(candidates[0].texts, anchor.arrowId); // Nowhere is free; the check stage reports it.
         }
       }
       return { ...state, texts: [...state.texts, ...texts], leaders: [...state.leaders, ...leaders] };

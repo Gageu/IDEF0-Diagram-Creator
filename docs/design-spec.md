@@ -82,7 +82,7 @@ flowchart LR
     UI["UI (React)<br/>function tree, editor forms,<br/>diagram view, panels"]
     D["Domain model<br/>functions, arrows,<br/>bundles, commands"]
     V["Validation<br/>rule registry:<br/>errors and warnings"]
-    L["Layout pipeline<br/>seven stages: model in,<br/>geometry out"]
+    L["Layout pipeline<br/>stages: model in,<br/>geometry out"]
     A["Router adapters<br/>libavoid-js or ELK,<br/>one interface"]
     R["SVG renderer<br/>geometry in,<br/>SVG string out"]
     E["Exporters<br/>SVG and glossary;<br/>draw.io later"]
@@ -138,6 +138,8 @@ Each IDEF0 rule is one small object implementing `Rule { id, severity, check(mod
 
 The 3 to 6 rule is a warning. The staircase placer and router take any number of boxes, so the count does not limit the program; a diagram outside the range still draws and exports, with the warning shown. Layout tests cover 1 to 8 boxes. Severity is a field on the rule, so the split above can be changed in one place.
 
+As built, M2 and B3 have no rule object because the model cannot express a breach of them (one root function; a role fixes the side), and the M5 check covers parent arrows missing from the child, since a child boundary arrow cannot be stored without a parent link or an explicit tunnel. The glossary rule arrives with the glossary panel.
+
 Some errors are prevented by construction instead of detected: the GUI only offers the four roles, so a diagonal arrow or an input on the top side cannot be expressed.
 
 ## 7. Layout pipeline
@@ -152,9 +154,10 @@ Layout is a chain of stages, each a pure function from one layout state to the n
 | 4 | Plan connections | Turns each arrow into point-to-point connections for the router. A boundary arrow that serves several boxes becomes a rake: straight to its first box, with a lane beside the frame edge carrying the branches | B8 |
 | 5 | Route | Orthogonal routing around boxes through the `Router` interface | B6, D3 |
 | 6 | Merge buses | Draws the path that connections of one arrow share only once, so branches start at T-junctions and joins end on their trunk | B8 |
-| 7 | Place note | Puts the diagram note in the largest free corner, before labels so that labels keep clear of it | |
-| 8 | Place labels | Tries a ranked list of spots beside each arrow's own segments and takes the first that touches no box, line or other label; falls back to a leader squiggle | B10 |
-| 9 | Check | Records arrow-through-box, a label on an arrow, box or other label, and out-of-frame geometry as defects on the geometry | Quality gate |
+| 7 | Stub unconnected | Draws each parent arrow that nothing on the diagram carries yet as a dashed stub at its frame edge | M5 |
+| 8 | Place note | Puts the diagram note in the largest free corner, before labels so that labels keep clear of it | |
+| 9 | Place labels | Tries a ranked list of spots beside each arrow's own segments and takes the first that touches no box, line or other label; falls back to a leader squiggle | B10 |
+| 10 | Check | Records arrow-through-box, a label on an arrow, box or other label, and out-of-frame geometry as defects on the geometry | Quality gate |
 
 **Side order.** The order of arrows along a box side is a rule over the model, not a layout result: outputs that reach farthest come first, inputs from earlier boxes sit above boundary inputs, feedback comes last. It lives in the domain (`arrowsAt`) because ICOM codes on the child diagram follow the same order, and the two must never disagree.
 
@@ -194,6 +197,8 @@ The screen has three panes: a function tree on the left, the live diagram in the
 - **Editor.** For a function: its label, and four lists (inputs, controls, outputs, mechanisms) each with an add row. Adding an arrow asks for a label and the other end, chosen from a dropdown of the diagram's functions plus "boundary". Typing an existing arrow's label offers to branch that arrow instead of creating a duplicate.
 - **Inherited arrows.** On a child diagram the editor lists each parent arrow with its ICOM code and state: connected, split, or unconnected. Unconnected ones show on the diagram at the correct frame edge, drawn dashed, until attached.
 - **Speed.** Every add action has a keyboard shortcut and keeps focus in the add row, so several arrows can be entered in a row without the mouse.
+
+**As built.** The screen's state (undo history, open diagram, selection, last message) is one immutable value with a reducer in `app/editor/editorState.ts`. `app/editor/arrowEntry.ts` turns an add-row entry into one command: it lists the other ends the model allows and decides between a new arrow, a branch and a join. Both are plain functions tested without a browser; the React components under `app/components` only call them. The renderer's `interactive` option writes each element's id into the on-screen SVG, which is how a click finds its function or arrow. The shortcuts are I, C, O and M for the four add rows and F for a new function.
 
 The UI talks to the rest of the app only by dispatching commands and reading the current model, layout result and violations. It contains no IDEF0 rules and no geometry.
 

@@ -1,4 +1,4 @@
-export type { Command } from './command';
+export { batch, type Command } from './command';
 export * from './arrowCommands';
 export * from './functionCommands';
 export * from './modelCommands';

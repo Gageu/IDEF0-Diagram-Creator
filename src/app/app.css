@@ -1,0 +1,103 @@
+:root {
+  --ink: #1b1f24;
+  --muted: #5c6670;
+  --line: #d3d8de;
+  --panel: #f6f7f9;
+  --accent: #0b5fd0;
+  --error: #b42318;
+  --warning: #9a5b00;
+  --ok: #1a7f37;
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+}
+
+* { box-sizing: border-box; }
+html, body, #root { height: 100%; margin: 0; }
+
+.app {
+  display: grid;
+  height: 100%;
+  grid-template-columns: 250px minmax(0, 1fr) 330px;
+  grid-template-rows: auto auto minmax(0, 1fr) 190px;
+  grid-template-areas: 'toolbar toolbar toolbar' 'message message message' 'tree diagram inspector' 'tree drawer inspector';
+}
+
+button, input, select, textarea { font: inherit; color: inherit; }
+button { padding: 3px 9px; border: 1px solid var(--line); border-radius: 4px; background: #fff; cursor: pointer; }
+button:hover:not(:disabled) { border-color: var(--accent); }
+button:disabled { color: #a0a7af; cursor: default; }
+button.danger:not(:disabled) { color: var(--error); }
+button.icon { padding: 0 6px; border-color: transparent; background: none; color: var(--muted); }
+button.link { padding: 0; border: none; background: none; color: var(--accent); text-align: left; }
+input[type='text'], textarea, select { width: 100%; min-width: 0; padding: 4px 6px; border: 1px solid var(--line); border-radius: 4px; background: #fff; }
+textarea { resize: vertical; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 1px; }
+h2 { margin: 0 0 8px; font-size: 14px; }
+h3 { margin: 0 0 4px; font-size: 12px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--muted); }
+kbd { padding: 0 4px; border: 1px solid var(--line); border-radius: 3px; font: inherit; font-size: 10px; background: #fff; }
+
+.toolbar { grid-area: toolbar; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-bottom: 1px solid var(--line); background: var(--panel); }
+.toolbar-title { margin-right: 10px; }
+.toolbar-model { color: var(--muted); }
+.toolbar-gap { flex: 1; }
+.toolbar-divider { width: 1px; height: 18px; background: var(--line); }
+
+.message { grid-area: message; display: flex; justify-content: space-between; padding: 5px 10px; background: #fdecea; color: var(--error); border-bottom: 1px solid #f3c4bf; }
+
+.pane { min-height: 0; overflow: auto; }
+.tree { grid-area: tree; padding: 10px; border-right: 1px solid var(--line); background: var(--panel); }
+.inspector { grid-area: inspector; padding: 10px; border-left: 1px solid var(--line); background: var(--panel); }
+.button-row { display: flex; flex-wrap: wrap; gap: 4px; margin-bottom: 10px; }
+
+.tree-list, .tree-list ul { margin: 0; padding: 0; list-style: none; }
+.tree-list ul { padding-left: 14px; }
+.tree-row { display: flex; gap: 6px; width: 100%; padding: 3px 6px; border: none; border-radius: 4px; background: none; text-align: left; }
+.tree-row:hover { background: #e9edf2; }
+.tree-row.is-open { font-weight: 600; }
+.tree-row.is-selected { background: #dbe8fb; }
+.tree-number { min-width: 30px; color: var(--muted); font-variant-numeric: tabular-nums; }
+
+.diagram { grid-area: diagram; display: flex; flex-direction: column; overflow: hidden; }
+.diagram-bar { display: flex; align-items: center; gap: 4px; padding: 5px 10px; border-bottom: 1px solid var(--line); }
+.breadcrumb button { border: none; background: none; color: var(--accent); padding: 2px 4px; }
+.breadcrumb button:disabled { color: var(--ink); font-weight: 600; }
+.breadcrumb-sep { color: var(--muted); }
+.zoom-level { min-width: 42px; text-align: center; color: var(--muted); font-variant-numeric: tabular-nums; }
+.layout-warning { padding: 5px 10px; background: #fff4d6; color: var(--warning); border-bottom: 1px solid #f0d99a; }
+.canvas-viewport { position: relative; flex: 1; min-height: 0; overflow: hidden; background: #e7eaee; cursor: grab; touch-action: none; user-select: none; }
+.canvas-viewport:active { cursor: grabbing; }
+.canvas { position: absolute; top: 0; left: 0; transform-origin: 0 0; box-shadow: 0 1px 6px rgb(0 0 0 / 0.18); }
+.canvas svg { display: block; }
+.canvas [data-function-id], .canvas [data-arrow-id] { cursor: pointer; }
+.canvas-message { margin: 20px; color: var(--muted); }
+
+.field { display: block; margin-bottom: 8px; }
+.field > span { display: block; margin-bottom: 2px; color: var(--muted); }
+.role { margin-top: 12px; padding-top: 8px; border-top: 1px solid var(--line); }
+.end-list { margin: 0 0 4px; padding: 0; list-style: none; }
+.end-list li { display: flex; justify-content: space-between; align-items: baseline; gap: 6px; padding: 1px 0; }
+.add-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr) auto; gap: 4px; }
+.add-row > select:first-child { grid-column: span 2; }
+.hint { grid-column: 1 / -1; margin: 2px 0 0; color: var(--muted); }
+.empty { color: var(--muted); }
+.connect { display: inline-flex; gap: 4px; }
+.connect select { width: auto; max-width: 180px; }
+
+.drawer { grid-area: drawer; border-top: 1px solid var(--line); }
+.tabs { position: sticky; top: 0; display: flex; gap: 2px; padding: 4px 10px 0; border-bottom: 1px solid var(--line); background: var(--panel); }
+.tabs button { border-bottom: none; border-radius: 4px 4px 0 0; background: none; }
+.tabs button[aria-selected='true'] { background: #fff; font-weight: 600; }
+.count { margin-left: 4px; padding: 0 6px; border-radius: 8px; background: #e3e7ec; font-weight: 400; }
+.count.is-error { background: #fdecea; color: var(--error); }
+.violations { margin: 0; padding: 4px 10px; list-style: none; }
+.violation { display: flex; gap: 8px; width: 100%; padding: 3px 4px; border: none; background: none; text-align: left; }
+.violation:hover { background: #eef2f6; }
+.badge { padding: 0 6px; border-radius: 3px; font-size: 11px; text-transform: uppercase; }
+.badge.is-error { background: #fdecea; color: var(--error); }
+.badge.is-warning { background: #fff4d6; color: var(--warning); }
+.badge.is-ok { background: #e3f4e7; color: var(--ok); }
+.rule-id { min-width: 32px; font-weight: 600; }
+.diagram-id { min-width: 30px; color: var(--muted); }
+.inherited { margin: 4px 10px; border-collapse: collapse; }
+.inherited td { padding: 3px 12px 3px 0; }

@@ -26,6 +26,8 @@ export interface TextGeometry {
   readonly lines: readonly string[];
   readonly style: TextStyleName;
   readonly anchor: TextAnchor;
+  /** Id of the arrow the text labels, so a viewer can map a click on the label to the arrow. */
+  readonly arrowId?: string;
 }
 
 export interface BoxGeometry {
@@ -42,6 +44,18 @@ export interface ArrowGeometry {
   /** Orthogonal polyline: consecutive points differ in x or in y, never both. */
   readonly points: readonly Point[];
   readonly head: boolean;
+  /** Drawn dashed: a parent arrow shown at the frame that nothing on this diagram is connected to yet. */
+  readonly dashed?: boolean;
+}
+
+/** The parentheses around the end of a tunneled arrow, where it would have crossed the frame. */
+export interface TunnelMark {
+  /** Where the arrow meets the frame. */
+  readonly at: Point;
+  /** Which way the arrow runs there; the parentheses straddle it. */
+  readonly run: 'horizontal' | 'vertical';
+  /** Unit step from the frame into the diagram along the arrow. */
+  readonly inward: Point;
 }
 
 /** A short line that ties a label to its arrow when the label cannot sit beside it (rule B10). */
@@ -77,6 +91,7 @@ export interface DiagramGeometry {
   readonly arrows: readonly ArrowGeometry[];
   readonly texts: readonly TextGeometry[];
   readonly leaders: readonly LeaderGeometry[];
+  readonly tunnels: readonly TunnelMark[];
   /** Empty when the drawing is clean. */
   readonly defects: readonly LayoutDefect[];
 }

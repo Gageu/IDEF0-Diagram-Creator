@@ -1,4 +1,4 @@
-import type { ArrowGeometry, LayoutDefect, LeaderGeometry, Point, Rect, Size, TextGeometry } from '../geometry/geometry';
+import type { ArrowGeometry, LayoutDefect, LeaderGeometry, Point, Rect, Size, TextGeometry, TunnelMark } from '../geometry/geometry';
 import type { DiagramView, Side } from './view';
 
 export interface PlacedBox {
@@ -66,6 +66,7 @@ export interface LayoutState {
   readonly routes: readonly ArrowGeometry[];
   readonly texts: readonly TextGeometry[];
   readonly leaders: readonly LeaderGeometry[];
+  readonly tunnels: readonly TunnelMark[];
   readonly defects: readonly LayoutDefect[];
 }
 
@@ -81,5 +82,5 @@ export interface LayoutStage {
 
 export function initialState(view: DiagramView): LayoutState {
   const empty = { x: 0, y: 0, width: 0, height: 0 };
-  return { view, size: empty, frame: empty, boxes: [], slots: {}, connections: [], anchors: [], routes: [], texts: [], leaders: [], defects: [] };
+  return { view, size: empty, frame: empty, boxes: [], slots: {}, connections: [], anchors: [], routes: [], texts: [], leaders: [], tunnels: [], defects: [] };
 }

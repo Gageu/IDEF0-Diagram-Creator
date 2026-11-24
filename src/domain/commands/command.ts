@@ -20,6 +20,14 @@ export function defineCommand(description: string, change: (model: Model) => Mod
   };
 }
 
+/** Several commands as one edit, so they undo together. If any fails, none is applied. */
+export function batch(description: string, commands: readonly Command[]): Command {
+  return {
+    description,
+    apply: (model) => commands.reduce((current, command) => command.apply(current), model),
+  };
+}
+
 export function moveItem<T>(items: readonly T[], from: number, to: number): T[] {
   const result = [...items];
   const [item] = result.splice(from, 1);

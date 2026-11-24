@@ -13,6 +13,7 @@ export { createPlanConnectionsStage } from './stages/planConnections';
 export { createPlaceLabelsStage } from './stages/placeLabels';
 export { createPlaceNoteStage } from './stages/placeNote';
 export { createRouteArrowsStage } from './stages/routeArrows';
+export { createStubUnconnectedStage } from './stages/stubUnconnected';
 export * from './state';
 export { textBounds } from './textBounds';
 export * from './textMeasurer';
