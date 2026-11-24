@@ -6,23 +6,43 @@ The design is in [docs/design-spec.md](docs/design-spec.md).
 
 ## Status
 
-Milestones 1 to 4 of the design spec are in place:
+Milestones 1 to 5 of the design spec are in place:
 
 - **Domain model** with commands, undo and redo, and JSON save and load. The
   reference model in `examples/change_control_model.json` imports cleanly.
-- **SVG renderer** ported from the reference pack's `idef0.py`.
+- **Validation**: each IDEF0 rule is one object in a registry. Errors (a
+  parent arrow missing from the child diagram, a function with no control or
+  no output) and warnings (box count outside 3 to 6, duplicate labels, names
+  that are not verb phrases, empty labels) each point at their element.
 - **Layout pipeline**: staircase box placement, side slots ordered to avoid
-  crossings, boundary arrows drawn as rakes with shared trunks, and
-  obstacle-avoiding routing through libavoid.
-- **Label placement**: each label is put beside its own arrow where nothing
-  else is drawn, and gets a leader squiggle only when no such spot exists.
-- **Quality gate**: a check stage records every defect (an arrow through a
-  box, overlapping labels, anything outside the frame), and the pipeline
-  retries with more room until the drawing is clean. All four reference
-  diagrams, and generated diagrams of 1 to 8 boxes, come out with no defects.
+  crossings, rakes with shared trunks, obstacle-avoiding routing through
+  libavoid, label placement, and a quality gate that retries with more room
+  until the drawing has no defects.
+- **SVG renderer** ported from the reference pack's `idef0.py`.
+- **Editor**: a function tree, the live diagram with pan and zoom, an editor
+  for the selected function or arrow, and a drawer with rule violations and
+  the open diagram's inherited arrows.
 
-The browser app is a read-only preview of the reference model for now; the
-editor is milestone 5. Tunnel parentheses are not drawn yet.
+SVG export of all diagrams and the glossary panel are milestone 6.
+
+## Using the editor
+
+`npm run dev` opens the editor on the reference model. **New** starts an empty
+model; work in progress is kept in the browser across reloads, and **Save**
+writes a JSON file that **Open** reads back.
+
+- Click a box, an arrow or a label to select it. Double-click a box to open
+  its child diagram; the breadcrumb goes back up.
+- With a function selected, press `I`, `C`, `O` or `M` to jump to the add row
+  for inputs, controls, outputs or mechanisms. Type a label, pick the other
+  end, press Enter. Focus stays in the row for the next arrow.
+- Typing the label of an arrow that is already on the diagram branches that
+  arrow to the function instead of adding a duplicate.
+- **Decompose** gives the selected function a child diagram. Its parent
+  arrows appear dashed at the frame until they are connected, from the
+  **Inherited arrows** tab or by clicking the dashed arrow.
+- `F` adds a function, `Ctrl+Z` and `Ctrl+Shift+Z` undo and redo, `Ctrl+S`
+  saves.
 
 ## Getting started
 
@@ -46,6 +66,7 @@ it. `tests/architecture.test.ts` enforces this table.
 | --- | --- | --- |
 | `src/domain` | The model, queries for derived values, commands, history | nothing |
 | `src/persistence` | The save format and the reference pack importer | `domain` |
+| `src/validation` | The `Rule` interface and one file per IDEF0 rule | `domain` |
 | `src/theme` | Every visual style value | nothing |
 | `src/geometry` | Plain layout output: rectangles, polylines, text anchors | `theme` |
 | `src/layout` | The pipeline of stages from model to geometry, and the `Router` interface | `domain`, `geometry`, `theme` |
@@ -57,6 +78,7 @@ it. `tests/architecture.test.ts` enforces this table.
 | To add | Do this |
 | --- | --- |
 | An edit | Write a function that returns `defineCommand(...)` in `src/domain/commands` |
+| A rule | Implement `Rule` in `src/validation/rules` and add it to `idef0Rules` in `src/validation/index.ts` |
 | A layout stage | Implement `LayoutStage` and add it to the list in `src/app/composition.ts` |
 | A router | Implement `Router`, run `describeRouterContract` on it in a test, and swap it in `composition.ts` (`libavoidRouter.ts` is the worked example) |
 | A different look | Pass another `Theme` or `LayoutOptions` in `composition.ts` |
