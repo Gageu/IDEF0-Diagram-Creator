@@ -40,6 +40,12 @@ writes a JSON file that **Open** reads back.
   delete, export.
 - The function tree opens and closes by branch, and always shows the open
   diagram's boxes. The arrow keys move through it.
+- Hover a box and a round handle appears on its right side. Drag it to
+  another box to connect them: the side you drop on sets the role (left
+  input, top control, bottom mechanism), and a popup asks for the label.
+  Dropping on empty space sends the arrow to the diagram's boundary.
+- Drag a row of **Parent arrows** onto a box to connect that arrow there.
+  Dragging one that is already connected branches it to a further box.
 - With a function selected, press `I`, `C`, `O` or `M` to jump to the add row
   for inputs, controls, outputs or mechanisms. Type a label, pick the other
   end, press Enter. Focus stays in the row for the next arrow.

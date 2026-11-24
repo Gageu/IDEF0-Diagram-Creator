@@ -1,6 +1,6 @@
 # IDEF0 Diagram Creator: Design Spec
 
-Last updated: 2026-11-24 (section 9 revised for the editor redesign)
+Last updated: 2026-11-24 (section 9 revised for the editor redesign and dragging)
 
 ## 1. Purpose and scope
 
@@ -197,6 +197,7 @@ The screen has three columns under a top bar: the function tree on the left, the
 - **Function tree.** Shows the decomposition with node numbers. Branches open and close, and the branch holding the open diagram or the selected function opens by itself. Clicking a node opens its diagram. The arrow keys move through the rows.
 - **Parent arrows.** Under the tree on a child diagram: each arrow of the parent box with its ICOM code and state (connected, split or unconnected), grouped by role. Unconnected ones are connected from here, and show on the diagram at the correct frame edge, drawn dashed, until attached.
 - **Diagram.** Read-only drawing with pan and zoom. Clicking a box or arrow selects it in the editor panel; double-clicking a box opens its child diagram; a breadcrumb (A-0 › A0 › A2) goes back up.
+- **Dragging.** Arrows can be made on the diagram itself, in two ways. A row of the parent arrows list drags onto a box, which connects that arrow there by the role the parent fixes; a connected one branches to the further box. The box under the pointer shows a handle on its output side, and pulling it to another box connects the two, with the side dropped on as the role (left input, top control, bottom mechanism) and a popup for the label. Released on empty space, the pull goes to the boundary. Boxes still cannot be moved: dragging makes connections, not layout.
 - **Right-click menus.** A box, an arrow, a dashed parent arrow, a tree row and the empty part of a diagram each have a menu of the actions that apply to them. The tree row's "…" button opens the same menu.
 - **Editor panel.** For a function: its label, its glossary definition, and four lists (inputs, controls, outputs, mechanisms) each with an add row. Adding an arrow asks for a label and the other end, chosen from a dropdown of the diagram's functions plus "boundary". Typing an existing arrow's label offers to branch that arrow instead of creating a duplicate.
 - **Glossary.** A view of its own in the centre, beside the diagram: every term with its definition, the functions and arrows it names as links, a search, a filter for undefined and unused terms, and a count of how many are defined.
@@ -215,6 +216,7 @@ What a component shows or offers is decided in plain modules under `app/editor`,
 | `glossaryView.ts` | The glossary rows with their uses, the filter, the search and the counts |
 | `contextMenu.ts` | The entries of each right-click menu, as data that names an action |
 | `functionActions.ts` | Edits offered in several places (add function, decompose, rename, delete the selection) |
+| `connectDrag.ts` | Which box and which side a dragged point is a drop on, and what dropping a parent arrow on a function does |
 
 A menu entry names its action as data (`run` a command, `open` a diagram, `edit` a field, `fit`, `export`), and `app/useScreen.ts` carries every action out in one place, so a button, a key and a menu item that do the same thing share one path. The renderer's `interactive` option writes each element's id into the on-screen SVG, which is how a click or a right-click finds its function or arrow. The shortcuts are I, C, O and M for the four add rows, F for a new function, F2 to rename and Del to delete.
 
