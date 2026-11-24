@@ -1,0 +1,27 @@
+/* The right column: the editor for the selection. */
+.inspector-header { display: flex; align-items: center; gap: 8px; min-height: 28px; margin-bottom: 12px; }
+.inspector-header h2 { font-size: 15px; }
+.kind-chip { padding: 2px 8px; border-radius: 10px; background: var(--accent-soft); color: var(--accent-text); font-size: 11px; font-weight: 600; }
+
+.field { display: block; margin-bottom: 10px; }
+.field > span { display: block; margin-bottom: 4px; color: var(--text-muted); font-size: 12px; font-weight: 500; }
+
+.tip { display: flex; gap: 8px; margin-bottom: 14px; padding: 8px 10px; border-radius: var(--radius-m); background: var(--accent-soft); color: var(--accent-text); font-size: 12px; }
+.tip .icon { margin-top: 1px; }
+
+.role-card { margin-top: 10px; padding: 8px 10px 10px; border: 1px solid var(--border); border-left: 3px solid var(--role, var(--border-strong)); border-radius: var(--radius-m); background: var(--surface); }
+.role-card h3 { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; color: var(--text); }
+
+.end-list { margin: 0 0 6px; padding: 0; list-style: none; }
+.end-list:empty { margin: 0; }
+.end-list li { display: flex; justify-content: space-between; align-items: center; gap: 6px; min-height: 24px; padding-left: 2px; }
+.end-list li > :first-child { min-width: 0; overflow-wrap: anywhere; }
+
+.add-row { display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 6px; }
+.add-row > input { grid-column: 1 / -1; }
+.add-row .hint { grid-column: 1 / -1; }
+
+.parent-label { display: flex; align-items: center; gap: 8px; margin-bottom: 8px; font-size: 14px; font-weight: 600; }
+.menu-inline { display: flex; flex-direction: column; gap: 6px; margin-top: 12px; }
+.menu-inline h3 { margin-top: 4px; }
+.menu-inline button { justify-content: flex-start; }

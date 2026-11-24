@@ -1,11 +1,21 @@
-import { useEffect, useState, type KeyboardEvent } from 'react';
+import { useEffect, useState, type KeyboardEvent, type Ref } from 'react';
 
 /**
  * A text input that commits when the user leaves it or presses Enter, and
  * reverts on Escape. Each commit is one undo step, and the diagram is laid
- * out once per edit instead of once per keystroke.
+ * out once per edit instead of once per keystroke. A multi-line field takes
+ * Shift+Enter for a new line.
  */
-export function TextField(props: { value: string; onCommit(value: string): void; label: string; multiline?: boolean; autoFocus?: boolean }) {
+export function TextField(props: {
+  value: string;
+  onCommit(value: string): void;
+  label: string;
+  multiline?: boolean;
+  placeholder?: string;
+  disabled?: boolean;
+  /** The underlying field, for callers that move the cursor into it. */
+  fieldRef?: Ref<HTMLInputElement | HTMLTextAreaElement>;
+}) {
   const [draft, setDraft] = useState(props.value);
   useEffect(() => setDraft(props.value), [props.value]);
 
@@ -21,10 +31,10 @@ export function TextField(props: { value: string; onCommit(value: string): void;
       event.currentTarget.blur();
     }
   };
-  const shared = { value: draft, 'aria-label': props.label, onBlur: commit, onKeyDown, autoFocus: props.autoFocus === true };
+  const shared = { value: draft, 'aria-label': props.label, placeholder: props.placeholder, disabled: props.disabled === true, onBlur: commit, onKeyDown };
   return props.multiline ? (
-    <textarea {...shared} rows={3} onChange={(e) => setDraft(e.target.value)} />
+    <textarea {...shared} ref={props.fieldRef as Ref<HTMLTextAreaElement>} rows={1} onChange={(e) => setDraft(e.target.value)} />
   ) : (
-    <input {...shared} type="text" onChange={(e) => setDraft(e.target.value)} onFocus={(e) => e.target.select()} />
+    <input {...shared} ref={props.fieldRef as Ref<HTMLInputElement>} type="text" onChange={(e) => setDraft(e.target.value)} onFocus={(e) => e.target.select()} />
   );
 }

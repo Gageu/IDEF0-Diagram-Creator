@@ -1,0 +1,36 @@
+/* The left column: the function tree, and under it the arrows the open diagram receives from its parent. */
+.sidebar-section { display: flex; flex-direction: column; min-height: 0; padding: 8px; }
+.sidebar-section .section-header { padding: 0 2px 4px 6px; }
+.sidebar-section .section-header h2 { flex: 1; }
+.tree { flex: 1 1 60%; }
+.parent-arrows { flex: 0 1 auto; max-height: 45%; border-top: 1px solid var(--border); overflow-y: auto; }
+.parent-arrows .section-header h2 { flex: none; }
+.parent-arrows .empty { padding: 4px 6px 8px; font-size: 12px; }
+
+.tree-list { margin: 0; padding: 0; list-style: none; overflow-y: auto; flex: 1; }
+.tree-row { position: relative; display: flex; align-items: flex-start; gap: 2px; padding: 4px 4px 4px 6px; border-radius: var(--radius-m); cursor: pointer; outline-offset: -2px; }
+.tree-row:hover { background: var(--surface-hover); }
+.tree-row.is-selected { background: var(--accent-soft); color: var(--accent-text); }
+.tree-row.is-open .tree-number, .tree-row.is-open .tree-label { font-weight: 600; }
+.tree-row.is-open::before { content: ''; position: absolute; left: 0; top: 5px; bottom: 5px; width: 3px; border-radius: 2px; background: var(--accent); }
+.tree-toggle { width: 18px; height: 18px; padding: 0; border: none; border-radius: var(--radius-s); background: none; color: var(--text-faint); flex: none; }
+.tree-toggle:hover:not(:disabled) { background: var(--border); color: var(--text); }
+.tree-number { min-width: 30px; margin-right: 4px; color: var(--text-faint); font-variant-numeric: tabular-nums; flex: none; }
+.tree-row.is-selected .tree-number { color: inherit; opacity: 0.75; }
+.tree-label { flex: 1; min-width: 0; overflow-wrap: anywhere; }
+.tree-more { width: 18px; height: 18px; padding: 0; border: none; border-radius: var(--radius-s); background: none; color: var(--text-muted); flex: none; visibility: hidden; }
+.tree-more:hover { background: var(--border); }
+.tree-row:hover .tree-more, .tree-row:focus-visible .tree-more { visibility: visible; }
+
+.palette-group { margin-bottom: 8px; }
+.palette-group h3 { display: flex; align-items: center; gap: 6px; padding: 2px 6px 4px; }
+.palette-group ul { margin: 0; padding: 0; list-style: none; }
+.palette-row { display: flex; align-items: center; gap: 4px; padding-right: 4px; border-radius: var(--radius-m); }
+.palette-row:hover { background: var(--surface-hover); }
+.palette-row.is-selected { background: var(--accent-soft); }
+.palette-main { flex: 1; justify-content: flex-start; gap: 8px; min-width: 0; height: auto; min-height: 28px; padding: 3px 6px; border: none; background: none; font-weight: 400; text-align: left; white-space: normal; }
+.palette-main:hover:not(:disabled) { background: none; }
+.palette-label { min-width: 0; overflow-wrap: anywhere; }
+.code-chip { min-width: 28px; padding: 1px 5px; border-radius: var(--radius-s); background: color-mix(in srgb, var(--role) 14%, transparent); color: var(--role); font: 600 11px/16px var(--font-mono); text-align: center; flex: none; }
+.palette-row.is-unconnected .code-chip { background: none; outline: 1px dashed var(--role); outline-offset: -1px; }
+.state-tag { color: var(--text-faint); font-size: 11px; flex: none; }

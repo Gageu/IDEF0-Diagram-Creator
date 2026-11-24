@@ -1,0 +1,95 @@
+/*
+ * Design tokens: every colour, radius and shadow the editor uses. The dark
+ * set follows the system setting. The diagram's paper stays white in both,
+ * because the drawing on screen is the drawing that is exported.
+ */
+:root {
+  color-scheme: light;
+
+  --bg: #f6f7f9;
+  --surface: #ffffff;
+  --surface-hover: #eef0f4;
+  --surface-sunken: #f1f3f6;
+  --canvas: #e9ecf1;
+  --canvas-dot: #cdd2db;
+  --border: #e3e6eb;
+  --border-strong: #cdd2da;
+
+  --text: #1b1e25;
+  --text-muted: #5d6573;
+  --text-faint: #8b93a1;
+
+  --accent: #4f46e5;
+  --accent-hover: #4338ca;
+  --accent-soft: #eceefe;
+  --accent-text: #3b34b8;
+  --on-accent: #ffffff;
+
+  --error: #c9291c;
+  --error-soft: #fdeceb;
+  --warning: #a85a04;
+  --warning-soft: #fff4dc;
+  --ok: #0f7a4d;
+  --ok-soft: #e4f6ec;
+
+  /* One colour per ICOM role, used wherever a role is named. */
+  --role-input: #2563eb;
+  --role-control: #9333ea;
+  --role-output: #059669;
+  --role-mechanism: #d97706;
+
+  /* The drawing: white paper in both themes, so what marks the selection on it is fixed too. */
+  --paper-selected: #f1f2ff;
+  --paper-accent: #4f46e5;
+
+  --radius-s: 4px;
+  --radius-m: 6px;
+  --radius-l: 10px;
+  --shadow-s: 0 1px 2px rgb(16 24 40 / 0.06);
+  --shadow-m: 0 4px 12px rgb(16 24 40 / 0.1), 0 1px 3px rgb(16 24 40 / 0.08);
+  --shadow-l: 0 12px 32px rgb(16 24 40 / 0.16), 0 2px 6px rgb(16 24 40 / 0.08);
+
+  --font: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  --font-mono: ui-monospace, 'SF Mono', 'Cascadia Mono', Menlo, Consolas, monospace;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    color-scheme: dark;
+
+    --bg: #17191e;
+    --surface: #1f2228;
+    --surface-hover: #2a2e36;
+    --surface-sunken: #1a1c21;
+    --canvas: #101215;
+    --canvas-dot: #2a2e37;
+    --border: #2d313a;
+    --border-strong: #3d424d;
+
+    --text: #e7e9ee;
+    --text-muted: #a4abb8;
+    --text-faint: #767e8c;
+
+    --accent: #8b8ff8;
+    --accent-hover: #a3a6fa;
+    --accent-soft: #2a2c55;
+    --accent-text: #c3c5fc;
+    --on-accent: #14152b;
+
+    --error: #f97066;
+    --error-soft: #3f1d1a;
+    --warning: #f5b453;
+    --warning-soft: #3a2b10;
+    --ok: #4cc38a;
+    --ok-soft: #15301f;
+
+    --role-input: #6ea0ff;
+    --role-control: #c084fc;
+    --role-output: #34d399;
+    --role-mechanism: #fbbf24;
+
+    --shadow-s: 0 1px 2px rgb(0 0 0 / 0.4);
+    --shadow-m: 0 4px 12px rgb(0 0 0 / 0.45);
+    --shadow-l: 0 12px 32px rgb(0 0 0 / 0.55);
+  }
+}
