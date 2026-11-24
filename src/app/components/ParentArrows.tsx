@@ -6,7 +6,8 @@ import type { Screen } from '../useScreen';
 /**
  * The arrows the open diagram receives from its parent box, grouped by side.
  * Each must be carried into the diagram, so the ones still unconnected stand
- * out and can be connected from here.
+ * out. Each row can be dragged onto a function's box to connect it there,
+ * or connected from its button.
  */
 export function ParentArrows({ screen }: { screen: Screen }) {
   const { editor } = screen;
@@ -36,10 +37,20 @@ export function ParentArrows({ screen }: { screen: Screen }) {
               {arrows.map((p) => {
                 const menu = () => parentArrowMenu(model, state.diagramId, p.parentArrowId);
                 return (
-                  <li key={p.parentArrowId} className={`palette-row is-${p.state} ${p.parentArrowId === selectedId ? 'is-selected' : ''}`}>
+                  <li
+                    key={p.parentArrowId}
+                    className={`palette-row is-${p.state} ${p.parentArrowId === selectedId ? 'is-selected' : ''}`}
+                    draggable
+                    onDragStart={(event) => {
+                      event.dataTransfer.setData('text/plain', p.label);
+                      event.dataTransfer.effectAllowed = 'link';
+                      screen.workspace.dispatch({ type: 'drag-parent-arrow', id: p.parentArrowId });
+                    }}
+                    onDragEnd={() => screen.workspace.dispatch({ type: 'drag-parent-arrow', id: undefined })}
+                  >
                     <button
                       className="palette-main"
-                      title={`${p.label || '(no label)'}: ${p.state} on this diagram`}
+                      title={`${p.label || '(no label)'}: ${p.state} on this diagram. Drag it onto a function to connect it there.`}
                       onClick={() => editor.select({ kind: 'parent-arrow', id: p.parentArrowId })}
                       onContextMenu={(event) => {
                         event.preventDefault();
