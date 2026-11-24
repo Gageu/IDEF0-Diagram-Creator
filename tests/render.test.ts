@@ -40,6 +40,11 @@ describe('renderSvg', () => {
     expect(svg).not.toMatch(/\brx=/);
   });
 
+  it('draws a leader as a thin zigzag from the label to the arrow', () => {
+    const svg = renderSvg(geometry({ leaders: [{ from: { x: 100, y: 100 }, to: { x: 200, y: 100 } }] }), referenceTheme);
+    expect(svg).toContain('<path d="M100,100 L140,104 L160,96 L200,100" fill="none" stroke="#000" stroke-width="0.8"/>');
+  });
+
   it('draws the NODE / TITLE / NUMBER footer below the frame and escapes text', () => {
     const svg = renderSvg(geometry({ footer: { node: 'A-0', title: 'Checklists & <Templates>', number: 'CC-01' } }), referenceTheme);
     expect(svg).toContain('<rect x="20" y="220" width="360" height="44"');

@@ -26,6 +26,7 @@ export interface Theme {
     readonly headLength: number;
     readonly headHalfWidth: number;
   };
+  readonly leader: { readonly strokeWidth: number };
   readonly frame: { readonly strokeWidth: number };
   readonly footer: {
     readonly height: number;
@@ -52,6 +53,7 @@ export const referenceTheme: Theme = {
   },
   box: { strokeWidth: 1.6, numberInset: 5 },
   arrow: { strokeWidth: 1.3, bendRadius: 8, headLength: 10, headHalfWidth: 4.5 },
+  leader: { strokeWidth: 0.8 },
   frame: { strokeWidth: 1 },
   footer: { height: 44, nodeCellWidth: 170, numberCellWidth: 200, textInset: 8, captionBaseline: 15, valueBaseline: 34 },
 };
