@@ -1,6 +1,7 @@
 export type { LayoutDeps } from './boundaryLabel';
 export * from './options';
 export * from './pipeline';
+export * from './qualityGate';
 export * from './router';
 export { createLibavoidRouter, type LibavoidRouterOptions } from './routers/libavoidRouter';
 export { createNaiveRouter } from './routers/naiveRouter';

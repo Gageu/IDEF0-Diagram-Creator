@@ -111,6 +111,11 @@ describe('A0 diagram of the reference model', () => {
 describe.each(diagramIds(model).map((id) => [diagramNode(model, id), id] as const))('diagram %s', (node, id) => {
   const g: DiagramGeometry = layoutPipeline.layout(model, id);
 
+  it('passes the quality gate: no defects and no leader lines', () => {
+    expect(g.defects).toEqual([]);
+    expect(g.leaders).toEqual([]);
+  });
+
   it('keeps every arrow orthogonal, inside the frame and out of every box', () => {
     for (const arrow of g.arrows) {
       for (const segment of segments(arrow.points)) {
