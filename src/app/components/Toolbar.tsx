@@ -1,7 +1,9 @@
+import { exporters } from '../../export';
+import type { LayoutDiagram } from '../composition';
 import { hasUnsavedChanges, canRedoEdit, canUndoEdit } from '../editor/editorState';
 import type { Editor } from '../editor/useEditor';
 
-export function Toolbar({ editor }: { editor: Editor }) {
+export function Toolbar({ editor, layout }: { editor: Editor; layout: LayoutDiagram | undefined }) {
   const { state, model } = editor;
   return (
     <header className="toolbar">
@@ -15,6 +17,24 @@ export function Toolbar({ editor }: { editor: Editor }) {
       <button onClick={() => void editor.openFile()} title="Open a model file (Ctrl+O)">Open…</button>
       <button onClick={editor.saveFile} title="Save the model as a JSON file (Ctrl+S)">Save</button>
       <button onClick={editor.loadExample} title="Load the change control reference model">Example</button>
+      <details className="menu">
+        <summary title="Export diagrams, the glossary or ICOM tables">Export</summary>
+        <ul>
+          {exporters.map((exporter) => (
+            <li key={exporter.id}>
+              <button
+                disabled={!layout}
+                onClick={(event) => {
+                  event.currentTarget.closest('details')?.removeAttribute('open');
+                  if (layout) editor.exportWith(exporter, layout);
+                }}
+              >
+                {exporter.label}
+              </button>
+            </li>
+          ))}
+        </ul>
+      </details>
       <span className="toolbar-divider" />
       <button onClick={() => editor.dispatch({ type: 'undo' })} disabled={!canUndoEdit(state)} title="Undo (Ctrl+Z)">Undo</button>
       <button onClick={() => editor.dispatch({ type: 'redo' })} disabled={!canRedoEdit(state)} title="Redo (Ctrl+Shift+Z)">Redo</button>

@@ -138,7 +138,7 @@ Each IDEF0 rule is one small object implementing `Rule { id, severity, check(mod
 
 The 3 to 6 rule is a warning. The staircase placer and router take any number of boxes, so the count does not limit the program; a diagram outside the range still draws and exports, with the warning shown. Layout tests cover 1 to 8 boxes. Severity is a field on the rule, so the split above can be changed in one place.
 
-As built, M2 and B3 have no rule object because the model cannot express a breach of them (one root function; a role fixes the side), and the M5 check covers parent arrows missing from the child, since a child boundary arrow cannot be stored without a parent link or an explicit tunnel. The glossary rule arrives with the glossary panel.
+As built, M2 and B3 have no rule object because the model cannot express a breach of them (one root function; a role fixes the side), and the M5 check covers parent arrows missing from the child, since a child boundary arrow cannot be stored without a parent link or an explicit tunnel. The glossary rule reports once for the model, with a count of undefined terms, and the glossary panel shows which.
 
 Some errors are prevented by construction instead of detected: the GUI only offers the four roles, so a diagonal arrow or an input on the top side cannot be expressed.
 
@@ -176,13 +176,14 @@ Layout is a chain of stages, each a pure function from one layout state to the n
 One renderer turns layout geometry into an SVG string, and both the on-screen preview and the SVG export use that same string, so what the user sees is what they export.
 
 - **Renderer.** A port of `idef0.py`: square boxes at stroke 1.6, arrows at stroke 1.3 with radius 8 arc bends, arrowheads as separate filled triangles, frame and NODE / TITLE / NUMBER footer. Style values live in one `Theme` object taken from part 2 of the rules spec.
-- **Exporters.** Each implements `Exporter { id, label, fileExtension, export(model, selection): Blob }` and registers itself. The export menu is built from the registry.
+- **Exporters.** Each implements `Exporter { id, label, export(context): { files, skipped } }` and sits in one registry list; the export menu is built from that list. The context hands the exporter the model, the open diagram, a function that draws a diagram and the reason a diagram is blocked, so an exporter depends on the domain only and runs without a browser. Files are plain text with a name and a media type. One file downloads as it is; several are bundled by a small store-only zip writer in the same module, which avoids a dependency.
+- **Blocking.** A diagram with a rule error is left out and named in a message. A diagram whose layout still has defects is exported, and the message says so.
 
 | Exporter | Version 1 | Input |
 | --- | --- | --- |
 | SVG, one diagram or all | Yes | Layout geometry through the renderer |
 | Glossary as Markdown | Yes | Model only |
-| ICOM table per function, Markdown or CSV | If time allows | Model only |
+| ICOM table per function, Markdown | Yes | Model only |
 | PNG | If it comes cheap | Rasterised from the SVG in the browser |
 | draw.io | No | Layout geometry; `a0_drawio.py` in the pack shows the mapping |
 

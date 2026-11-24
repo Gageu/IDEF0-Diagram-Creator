@@ -95,14 +95,25 @@ export interface DrawnDiagram {
 }
 
 export type ViewDiagram = (model: Model, diagramId: DiagramId) => DrawnDiagram;
+export type LayoutDiagram = (model: Model, diagramId: DiagramId) => DiagramGeometry;
 
 /** The on-screen view of a diagram, with its geometry so the screen can report layout warnings. */
-export function createViewDiagram(router: Router): ViewDiagram {
-  const pipeline = createPipeline(router);
+export function createViewDiagram(layout: LayoutDiagram): ViewDiagram {
   return (model, diagramId) => {
-    const geometry = pipeline.layout(model, diagramId);
+    const geometry = layout(model, diagramId);
     return { geometry, svg: renderSvg(geometry, theme, { interactive: true }) };
   };
+}
+
+/** Model and diagram in, geometry out: the layout the screen and the exporters share. */
+export function createLayoutDiagram(router: Router): LayoutDiagram {
+  const pipeline = createPipeline(router);
+  return (model, diagramId) => pipeline.layout(model, diagramId);
+}
+
+/** One diagram's geometry as the SVG that is exported: the same drawing as on screen, without click targets. */
+export function renderExportSvg(geometry: DiagramGeometry): string {
+  return renderSvg(geometry, theme);
 }
 
 /** Every IDEF0 rule the app checks, applied to a model. */

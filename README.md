@@ -6,24 +6,25 @@ The design is in [docs/design-spec.md](docs/design-spec.md).
 
 ## Status
 
-Milestones 1 to 5 of the design spec are in place:
+All six milestones of the design spec are in place:
 
 - **Domain model** with commands, undo and redo, and JSON save and load. The
   reference model in `examples/change_control_model.json` imports cleanly.
 - **Validation**: each IDEF0 rule is one object in a registry. Errors (a
   parent arrow missing from the child diagram, a function with no control or
   no output) and warnings (box count outside 3 to 6, duplicate labels, names
-  that are not verb phrases, empty labels) each point at their element.
+  that are not verb phrases, empty labels, undefined glossary terms) each
+  point at their element.
 - **Layout pipeline**: staircase box placement, side slots ordered to avoid
   crossings, rakes with shared trunks, obstacle-avoiding routing through
   libavoid, label placement, and a quality gate that retries with more room
   until the drawing has no defects.
 - **SVG renderer** ported from the reference pack's `idef0.py`.
 - **Editor**: a function tree, the live diagram with pan and zoom, an editor
-  for the selected function or arrow, and a drawer with rule violations and
-  the open diagram's inherited arrows.
-
-SVG export of all diagrams and the glossary panel are milestone 6.
+  for the selected function or arrow, and a drawer with rule violations, the
+  open diagram's inherited arrows and the glossary.
+- **Export**: the open diagram or all diagrams as SVG, the glossary and the
+  ICOM tables as Markdown.
 
 ## Using the editor
 
@@ -41,6 +42,11 @@ writes a JSON file that **Open** reads back.
 - **Decompose** gives the selected function a child diagram. Its parent
   arrows appear dashed at the frame until they are connected, from the
   **Inherited arrows** tab or by clicking the dashed arrow.
+- **Export** downloads the open diagram, or all diagrams as a zip of SVG
+  files, plus the glossary and ICOM tables as Markdown. A diagram with a rule
+  error is left out and the message says why; warnings do not block export.
+- The **Glossary** tab lists every function and arrow name. Type definitions
+  there; a name that leaves the model is marked unused, not deleted.
 - `F` adds a function, `Ctrl+Z` and `Ctrl+Shift+Z` undo and redo, `Ctrl+S`
   saves.
 
@@ -67,6 +73,7 @@ it. `tests/architecture.test.ts` enforces this table.
 | `src/domain` | The model, queries for derived values, commands, history | nothing |
 | `src/persistence` | The save format and the reference pack importer | `domain` |
 | `src/validation` | The `Rule` interface and one file per IDEF0 rule | `domain` |
+| `src/export` | The `Exporter` interface, one file per format, and a small zip writer | `domain` |
 | `src/theme` | Every visual style value | nothing |
 | `src/geometry` | Plain layout output: rectangles, polylines, text anchors | `theme` |
 | `src/layout` | The pipeline of stages from model to geometry, and the `Router` interface | `domain`, `geometry`, `theme` |
@@ -78,6 +85,7 @@ it. `tests/architecture.test.ts` enforces this table.
 | To add | Do this |
 | --- | --- |
 | An edit | Write a function that returns `defineCommand(...)` in `src/domain/commands` |
+| An export format | Implement `Exporter` in `src/export` and add it to `exporters` in `src/export/index.ts`; the menu picks it up |
 | A rule | Implement `Rule` in `src/validation/rules` and add it to `idef0Rules` in `src/validation/index.ts` |
 | A layout stage | Implement `LayoutStage` and add it to the list in `src/app/composition.ts` |
 | A router | Implement `Router`, run `describeRouterContract` on it in a test, and swap it in `composition.ts` (`libavoidRouter.ts` is the worked example) |

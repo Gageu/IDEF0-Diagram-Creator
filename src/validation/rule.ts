@@ -10,6 +10,7 @@ export type Severity = 'error' | 'warning';
 /** The element a violation points at, so a viewer can select it. */
 export type ViolationSubject =
   | { readonly kind: 'diagram' }
+  | { readonly kind: 'glossary' }
   | { readonly kind: 'function'; readonly functionId: FunctionId }
   | { readonly kind: 'arrow'; readonly arrowId: ArrowId }
   /** An arrow on the parent diagram that this diagram should carry in or out. */
