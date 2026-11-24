@@ -1,6 +1,6 @@
 # IDEF0 Diagram Creator: Design Spec
 
-Last updated: 2026-11-24 (pipeline stages revised during milestone 3)
+Last updated: 2026-11-24 (section 9 revised for the editor redesign)
 
 ## 1. Purpose and scope
 
@@ -191,15 +191,32 @@ One renderer turns layout geometry into an SVG string, and both the on-screen pr
 
 ## 9. GUI
 
-The screen has three panes: a function tree on the left, the live diagram in the centre, and an editor for the selected function or arrow on the right, with the violations and glossary panels in a drawer below.
+The screen has three columns under a top bar: the function tree on the left, the diagram or the glossary in the centre, and an editor panel for the selected function or arrow on the right. A status bar along the bottom opens the rule violations.
 
-- **Function tree.** Shows the decomposition with node numbers. Clicking a node opens its diagram. "Add function" and "Decompose" act on the selection.
-- **Diagram.** Read-only drawing with pan and zoom. Clicking a box or arrow selects it in the editor; double-clicking a box opens its child diagram; a breadcrumb (A-0 › A0 › A2) goes back up.
-- **Editor.** For a function: its label, and four lists (inputs, controls, outputs, mechanisms) each with an add row. Adding an arrow asks for a label and the other end, chosen from a dropdown of the diagram's functions plus "boundary". Typing an existing arrow's label offers to branch that arrow instead of creating a duplicate.
-- **Inherited arrows.** On a child diagram the editor lists each parent arrow with its ICOM code and state: connected, split, or unconnected. Unconnected ones show on the diagram at the correct frame edge, drawn dashed, until attached.
+- **Top bar.** The model's name, undo and redo, a File menu, Save, the Export menu built from the exporter registry, and switches that hide either side column.
+- **Function tree.** Shows the decomposition with node numbers. Branches open and close, and the branch holding the open diagram or the selected function opens by itself. Clicking a node opens its diagram. The arrow keys move through the rows.
+- **Parent arrows.** Under the tree on a child diagram: each arrow of the parent box with its ICOM code and state (connected, split or unconnected), grouped by role. Unconnected ones are connected from here, and show on the diagram at the correct frame edge, drawn dashed, until attached.
+- **Diagram.** Read-only drawing with pan and zoom. Clicking a box or arrow selects it in the editor panel; double-clicking a box opens its child diagram; a breadcrumb (A-0 › A0 › A2) goes back up.
+- **Right-click menus.** A box, an arrow, a dashed parent arrow, a tree row and the empty part of a diagram each have a menu of the actions that apply to them. The tree row's "…" button opens the same menu.
+- **Editor panel.** For a function: its label, its glossary definition, and four lists (inputs, controls, outputs, mechanisms) each with an add row. Adding an arrow asks for a label and the other end, chosen from a dropdown of the diagram's functions plus "boundary". Typing an existing arrow's label offers to branch that arrow instead of creating a duplicate.
+- **Glossary.** A view of its own in the centre, beside the diagram: every term with its definition, the functions and arrows it names as links, a search, a filter for undefined and unused terms, and a count of how many are defined.
+- **Violations.** The status bar shows the number of errors and warnings and opens the list in a panel under the centre view. Each violation leads to its element.
 - **Speed.** Every add action has a keyboard shortcut and keeps focus in the add row, so several arrows can be entered in a row without the mouse.
+- **Look.** Every colour, radius and shadow is a token in `app/styles/tokens.css`, with a dark set that follows the system. Each ICOM role has one colour, used wherever a role is named. The diagram's paper stays white and its ink black in both themes, because the drawing on screen is the drawing that is exported.
 
-**As built.** The screen's state (undo history, open diagram, selection, last message) is one immutable value with a reducer in `app/editor/editorState.ts`. `app/editor/arrowEntry.ts` turns an add-row entry into one command: it lists the other ends the model allows and decides between a new arrow, a branch and a join. Both are plain functions tested without a browser; the React components under `app/components` only call them. The renderer's `interactive` option writes each element's id into the on-screen SVG, which is how a click finds its function or arrow. The shortcuts are I, C, O and M for the four add rows and F for a new function.
+**As built.** The screen keeps two immutable values, each with a reducer. `app/editor/editorState.ts` holds what is being edited: undo history, open diagram, selection, last message. `app/editor/workspaceState.ts` holds how the screen is arranged: the centre view, open panels, expanded tree branches. The second is never saved or undone.
+
+What a component shows or offers is decided in plain modules under `app/editor`, tested without a browser, and the React components under `app/components` only draw the result:
+
+| Module | Decides |
+| --- | --- |
+| `arrowEntry.ts` | The other ends an add row offers, and whether an entry is a new arrow, a branch or a join |
+| `treeView.ts` | Which tree rows are visible, and where an arrow key moves |
+| `glossaryView.ts` | The glossary rows with their uses, the filter, the search and the counts |
+| `contextMenu.ts` | The entries of each right-click menu, as data that names an action |
+| `functionActions.ts` | Edits offered in several places (add function, decompose, rename, delete the selection) |
+
+A menu entry names its action as data (`run` a command, `open` a diagram, `edit` a field, `fit`, `export`), and `app/useScreen.ts` carries every action out in one place, so a button, a key and a menu item that do the same thing share one path. The renderer's `interactive` option writes each element's id into the on-screen SVG, which is how a click or a right-click finds its function or arrow. The shortcuts are I, C, O and M for the four add rows, F for a new function, F2 to rename and Del to delete.
 
 The UI talks to the rest of the app only by dispatching commands and reading the current model, layout result and violations. It contains no IDEF0 rules and no geometry.
 
