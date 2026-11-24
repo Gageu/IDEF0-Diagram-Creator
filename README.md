@@ -63,6 +63,18 @@ npm run render:examples  # write every reference diagram to examples/out/
                          # (add -- --naive to compare with the naive router)
 ```
 
+## Hosting
+
+`.github/workflows/pages.yml` builds the app and publishes it to GitHub Pages
+on every push to `Main`. It needs one repository setting, once: **Settings >
+Pages > Build and deployment > Source: GitHub Actions**. The site is then at
+`https://gageu.github.io/IDEF0-Diagram-Creator/`.
+
+The build uses relative asset paths (`base: './'` in `vite.config.ts`), so the
+contents of `dist/` also run from any other static host or sub-folder. The app
+has no server: each person's model lives in their own browser until they save
+it to a file, so groupmates share work by passing the saved JSON file around.
+
 ## How the code is organised
 
 Data flows one way, and each module imports only from the modules listed for
