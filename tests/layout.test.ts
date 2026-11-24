@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { drawDiagram, layoutPipeline } from '../src/app/composition';
+import { createDrawDiagram, createPipeline, loadRouter, naiveRouter } from '../src/app/composition';
 import { CONTEXT_DIAGRAM, diagramIds, diagramNode } from '../src/domain';
 import { bottom, right, type DiagramGeometry, type Point, type Rect } from '../src/geometry/geometry';
 import { approximateTextMeasurer, wrapText } from '../src/layout';
@@ -7,6 +7,9 @@ import { referenceTheme } from '../src/theme/theme';
 import { referenceModel } from './fixtures';
 
 const model = referenceModel();
+const router = await loadRouter();
+const layoutPipeline = createPipeline(router);
+const drawDiagram = createDrawDiagram(router);
 
 function segments(points: readonly Point[]): [Point, Point][] {
   return points.slice(1).map((p, i) => [points[i]!, p]);
@@ -121,6 +124,22 @@ describe.each(diagramIds(model).map((id) => [diagramNode(model, id), id] as cons
     }
   });
 
+  it('never runs two different arrows along the same line', () => {
+    const overlaps: string[] = [];
+    const runs = g.arrows.flatMap((a) => segments(a.points).map((s) => ({ id: a.arrowId, s })));
+    runs.forEach((p, i) => {
+      for (const q of runs.slice(i + 1)) {
+        if (p.id === q.id) continue;
+        for (const [fixed, along] of [['x', 'y'], ['y', 'x']] as const) {
+          const collinear = p.s[0][fixed] === p.s[1][fixed] && q.s[0][fixed] === q.s[1][fixed] && p.s[0][fixed] === q.s[0][fixed];
+          const shared = Math.min(Math.max(p.s[0][along], p.s[1][along]), Math.max(q.s[0][along], q.s[1][along])) - Math.max(Math.min(p.s[0][along], p.s[1][along]), Math.min(q.s[0][along], q.s[1][along]));
+          if (collinear && shared > 0) overlaps.push(`${p.id} and ${q.id} share ${shared}px at ${fixed}=${p.s[0][fixed]}`);
+        }
+      }
+    });
+    expect(overlaps).toEqual([]);
+  });
+
   it('sets the boxes in a staircase without overlap (rule D1)', () => {
     g.boxes.slice(1).forEach((box, i) => {
       const previous = g.boxes[i]!;
@@ -136,5 +155,21 @@ describe.each(diagramIds(model).map((id) => [diagramNode(model, id), id] as cons
     const svg = drawDiagram(model, id);
     expect(drawDiagram(model, id)).toBe(svg);
     await expect(svg).toMatchFileSnapshot(`./__snapshots__/${node}.svg`);
+  });
+});
+
+describe('redraw speed', () => {
+  it('lays out and renders the six-box A0 diagram well inside the 500 ms budget', () => {
+    drawDiagram(model, model.rootId); // warm up
+    const started = performance.now();
+    drawDiagram(model, model.rootId);
+    expect(performance.now() - started).toBeLessThan(500);
+  });
+});
+
+describe('with the naive router', () => {
+  it('still draws every diagram, so the pipeline does not depend on one router', () => {
+    const draw = createDrawDiagram(naiveRouter());
+    for (const id of diagramIds(model)) expect(draw(model, id)).toContain('</svg>');
   });
 });

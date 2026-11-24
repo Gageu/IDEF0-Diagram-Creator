@@ -113,7 +113,9 @@ export function createPlanConnectionsStage(deps: LayoutDeps): LayoutStage {
         const along: Heading = side === 'left' ? 'south' : 'east';
         branchLabel(group, first, side === 'left' ? { x: first.box.rect.x - routing.stub, y: first.point.y } : { x: first.point.x, y: side === 'top' ? first.box.rect.y - routing.stub : bottom(first.box.rect) + routing.stub }, side === 'left' ? 'horizontal' : 'vertical');
         for (const end of rest) {
-          connections.push({ ...base, arrowId: end.arrow.id, from: { point: tee, heading: along }, to: { point: end.point, heading: ENTRY_HEADING[end.side as EntrySide] }, toBoxId: end.box.id });
+          // A branch to the same side of its box has one corner, where it leaves the lane.
+          const corner = end.side !== side ? [] : [side === 'left' ? { x: tee.x, y: end.point.y } : { x: end.point.x, y: tee.y }];
+          connections.push({ ...base, arrowId: end.arrow.id, from: { point: tee, heading: along }, to: { point: end.point, heading: ENTRY_HEADING[end.side as EntrySide] }, toBoxId: end.box.id, via: corner });
           if (end.side === side) {
             branchLabel(group, end, side === 'left' ? { x: tee.x, y: end.point.y } : { x: end.point.x, y: side === 'top' ? end.box.rect.y - routing.stub : bottom(end.box.rect) + routing.stub }, side === 'left' ? 'horizontal' : 'vertical');
           }
@@ -133,7 +135,7 @@ export function createPlanConnectionsStage(deps: LayoutDeps): LayoutStage {
         for (const end of ends) {
           branchLabel(group, end, end.point, 'horizontal');
           if (end === first) continue;
-          connections.push({ netId: group.netId, arrowId: end.arrow.id, head: false, from: { point: end.point, heading: 'east' }, to: { point: join, heading: 'north' }, fromBoxId: end.box.id });
+          connections.push({ netId: group.netId, arrowId: end.arrow.id, head: false, from: { point: end.point, heading: 'east' }, to: { point: join, heading: 'north' }, fromBoxId: end.box.id, via: [{ x: join.x, y: end.point.y }] });
         }
       }
 

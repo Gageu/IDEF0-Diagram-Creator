@@ -12,8 +12,8 @@ export interface RoutingScene {
  * Finds a path for every connection. The contract every implementation must
  * meet (and the contract tests check): one polyline per connection in the
  * same order, starting at `from.point` and ending at `to.point`, made only of
- * horizontal and vertical segments, with the last segment running along
- * `to.heading`.
+ * horizontal and vertical segments, leaving along `from.heading`, arriving
+ * along `to.heading`, and passing through the connection's `via` points.
  */
 export interface Router {
   readonly name: string;

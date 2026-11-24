@@ -2,6 +2,7 @@ export type { LayoutDeps } from './boundaryLabel';
 export * from './options';
 export * from './pipeline';
 export * from './router';
+export { createLibavoidRouter, type LibavoidRouterOptions } from './routers/libavoidRouter';
 export { createNaiveRouter } from './routers/naiveRouter';
 export { createAssignSlotsStage } from './stages/assignSlots';
 export { createMergeBusesStage } from './stages/mergeBuses';

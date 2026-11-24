@@ -1,8 +1,11 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import examplePack from '../../examples/change_control_model.json?raw';
 import { CONTEXT_DIAGRAM, diagramIds, diagramNode, diagramTitle, type DiagramId } from '../domain';
 import { importReferencePack } from '../persistence';
-import { drawDiagram } from './composition';
+import { createDrawDiagram, loadRouter, type DrawDiagram } from './composition';
+
+/** The router's WebAssembly module, served as a static asset by the bundler. */
+const routerWasmUrl = new URL('../../node_modules/libavoid-js/dist/libavoid.wasm', import.meta.url).href;
 
 /**
  * A preview of the reference model, one diagram at a time. It exists to show
@@ -12,7 +15,21 @@ import { drawDiagram } from './composition';
 export function App() {
   const model = useMemo(() => importReferencePack(examplePack), []);
   const [diagramId, setDiagramId] = useState<DiagramId>(CONTEXT_DIAGRAM);
-  const svg = useMemo(() => drawDiagram(model, diagramId), [model, diagramId]);
+  const [draw, setDraw] = useState<DrawDiagram>();
+  const [loadError, setLoadError] = useState<string>();
+
+  useEffect(() => {
+    let current = true;
+    loadRouter(routerWasmUrl).then(
+      (router) => current && setDraw(() => createDrawDiagram(router)),
+      (error: unknown) => current && setLoadError(String(error)),
+    );
+    return () => {
+      current = false;
+    };
+  }, []);
+
+  const svg = useMemo(() => draw?.(model, diagramId), [draw, model, diagramId]);
 
   return (
     <main style={{ fontFamily: 'system-ui, sans-serif', margin: 16 }}>
@@ -24,8 +41,10 @@ export function App() {
           </button>
         ))}
       </nav>
+      {loadError !== undefined && <p role="alert">The arrow router failed to load: {loadError}</p>}
+      {svg === undefined && loadError === undefined && <p>Loading the arrow router…</p>}
       {/* The SVG comes from our own renderer, which escapes all model text. */}
-      <div style={{ overflow: 'auto', border: '1px solid #ccc' }} dangerouslySetInnerHTML={{ __html: svg }} />
+      {svg !== undefined && <div style={{ overflow: 'auto', border: '1px solid #ccc' }} dangerouslySetInnerHTML={{ __html: svg }} />}
     </main>
   );
 }

@@ -39,6 +39,7 @@ export function createNaiveRouter(options: LayoutOptions['routing']): Router {
   const path = (c: Connection, scene: RoutingScene, channels: Map<Connection, number>): Point[] => {
     const a = c.from.point;
     const b = c.to.point;
+    if (c.via && c.via.length > 0) return [a, ...c.via, b];
     const fromBox = scene.boxes.find((box) => box.id === c.fromBoxId);
     const below = (fromBox ? bottom(fromBox.rect) : a.y) + loopClearance;
     const shape = `${c.from.heading}>${c.to.heading}`;

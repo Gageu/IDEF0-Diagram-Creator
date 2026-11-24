@@ -30,6 +30,8 @@ export interface Connection {
   /** Set when the end is on a box; otherwise the end is at the frame or on the net's own path. */
   readonly fromBoxId?: string;
   readonly toBoxId?: string;
+  /** Points the run must pass through, in order: the corners of a path the planner has already fixed. */
+  readonly via?: readonly Point[];
   /** Whether the run ends in an arrowhead. A run that ends on its net's trunk does not. */
   readonly head: boolean;
 }

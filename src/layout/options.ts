@@ -50,6 +50,10 @@ export interface LayoutOptions {
     /** Distance from a box to the first jog channel, and between channels. */
     readonly jogClearance: number;
     readonly jogSpacing: number;
+    /** Free space an obstacle-avoiding router keeps between an arrow and a box it passes. */
+    readonly boxClearance: number;
+    /** Distance an obstacle-avoiding router keeps between arrows that run side by side. */
+    readonly arrowSpacing: number;
   };
 }
 
@@ -69,5 +73,5 @@ export const referenceLayoutOptions: LayoutOptions = {
   margin: { left: 130, right: 130, top: 110, bottom: 110 },
   label: { wrapWidth: 120, codeOffset: 6, codeWidth: 20, lineGap: 6, clearance: 16 },
   lanes: { inset: 50, topInset: 75, spacing: 20 },
-  routing: { stub: 25, loopClearance: 30, jogClearance: 60, jogSpacing: 50 },
+  routing: { stub: 25, loopClearance: 30, jogClearance: 60, jogSpacing: 50, boxClearance: 14, arrowSpacing: 14 },
 };
