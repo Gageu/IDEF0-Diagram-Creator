@@ -3,6 +3,7 @@ import { arrowsOn, diagramOfFunction, type FunctionId, type Role } from '../../d
 import { otherEndChoices, planArrowEntry } from '../editor/arrowEntry';
 import type { Editor } from '../editor/useEditor';
 import { EndSelect } from './EndSelect';
+import { TargetSelect } from './TargetSelect';
 
 /**
  * The quick-add row under one side of a function: a label, the other end,
@@ -41,7 +42,11 @@ export const AddArrowRow = forwardRef<HTMLInputElement, { editor: Editor; functi
         onKeyDown={(e) => e.key === 'Escape' && e.currentTarget.blur()}
       />
       <datalist id={listId}>{existingLabels.map((l) => <option key={l} value={l} />)}</datalist>
-      <EndSelect choices={choices} value={other?.key} onChange={setChosenKey} label={role === 'output' ? 'Where it goes' : 'Where it comes from'} />
+      {role === 'output' ? (
+        <TargetSelect model={model} choices={choices} value={other?.key} onChange={setChosenKey} />
+      ) : (
+        <EndSelect choices={choices} value={other?.key} onChange={setChosenKey} label="Where it comes from" />
+      )}
       <button type="submit" disabled={plan.kind === 'invalid'}>Add</button>
       {hint !== undefined && <p className="hint">{hint}</p>}
     </form>

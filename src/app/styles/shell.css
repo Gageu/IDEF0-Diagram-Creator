@@ -1,0 +1,73 @@
+/* The frame of the screen: top bar, the three columns, status bar, and the message that floats over them. */
+.app {
+  display: grid;
+  height: 100%;
+  grid-template-columns: 264px minmax(0, 1fr) 340px;
+  grid-template-rows: 44px minmax(0, 1fr) 26px;
+  grid-template-areas: 'topbar topbar topbar' 'sidebar workspace inspector' 'status status status';
+}
+.app.no-tree { grid-template-columns: 0 minmax(0, 1fr) 340px; }
+.app.no-editor { grid-template-columns: 264px minmax(0, 1fr) 0; }
+.app.no-tree.no-editor { grid-template-columns: 0 minmax(0, 1fr) 0; }
+
+.topbar { grid-area: topbar; display: flex; align-items: center; gap: 6px; padding: 0 10px; border-bottom: 1px solid var(--border); background: var(--surface); }
+.brand { display: inline-flex; margin: 0 2px 0 4px; }
+.brand-tile { fill: var(--accent); }
+.brand-box { fill: var(--on-accent); }
+.brand-arrows { stroke: var(--on-accent); stroke-width: 1.6; stroke-linecap: round; opacity: 0.75; }
+.model-name { max-width: 40vw; border-color: transparent; background: none; font-weight: 600; font-size: 14px; }
+.model-name > span:first-child { overflow: hidden; text-overflow: ellipsis; }
+.unsaved-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--warning); flex: none; }
+.button-group { display: inline-flex; }
+
+.sidebar { grid-area: sidebar; display: flex; flex-direction: column; min-height: 0; border-right: 1px solid var(--border); background: var(--bg); }
+.workspace { grid-area: workspace; display: flex; flex-direction: column; min-width: 0; min-height: 0; background: var(--surface); }
+.inspector { grid-area: inspector; min-height: 0; overflow-y: auto; padding: 12px; border-left: 1px solid var(--border); background: var(--bg); }
+
+.workspace-header { display: flex; align-items: center; gap: 12px; height: 40px; padding: 0 10px; border-bottom: 1px solid var(--border); flex: none; }
+.breadcrumb { display: flex; align-items: center; min-width: 0; color: var(--text-faint); }
+.crumb { display: inline-flex; align-items: center; min-width: 0; }
+.crumb button { height: 24px; padding: 0 6px; border: none; background: none; color: var(--text-muted); min-width: 0; }
+.crumb button:hover:not(:disabled) { background: var(--surface-hover); color: var(--text); }
+.crumb button:disabled { opacity: 1; color: var(--text); }
+.crumb-node { font-weight: 600; font-variant-numeric: tabular-nums; }
+.crumb-title { overflow: hidden; text-overflow: ellipsis; font-weight: 400; color: var(--text-muted); }
+
+.violations-panel { flex: none; max-height: 34%; display: flex; flex-direction: column; border-top: 1px solid var(--border); background: var(--surface); }
+.violations-panel .section-header { padding: 4px 8px 4px 12px; border-bottom: 1px solid var(--border); }
+.violations { margin: 0; padding: 4px; list-style: none; overflow-y: auto; }
+.violations .empty { display: flex; align-items: center; gap: 8px; padding: 8px; color: var(--ok); }
+.violation { justify-content: flex-start; gap: 8px; width: 100%; height: auto; min-height: 28px; padding: 4px 8px; border: none; background: none; font-weight: 400; text-align: left; white-space: normal; }
+.violation.is-error .icon { color: var(--error); }
+.violation.is-warning .icon { color: var(--warning); }
+.rule-id { min-width: 70px; font: 600 11px var(--font-mono); color: var(--text-muted); }
+.diagram-id { min-width: 34px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.violation-message { flex: 1; }
+
+.statusbar { grid-area: status; display: flex; align-items: center; gap: 14px; padding: 0 10px 0 4px; border-top: 1px solid var(--border); background: var(--surface); font-size: 12px; color: var(--text-muted); }
+.status-button { height: 22px; gap: 10px; padding: 0 8px; border: none; background: none; font-size: 12px; }
+.status-button > span { display: inline-flex; align-items: center; gap: 4px; }
+.status-ok { color: var(--ok); }
+.status-error { color: var(--error); }
+.status-warning { color: var(--warning); }
+.status-muted { color: var(--text-faint); }
+.status-text { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+.toast {
+  position: fixed;
+  left: 50%;
+  bottom: 42px;
+  z-index: 30;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  max-width: min(640px, calc(100vw - 32px));
+  padding: 8px 8px 8px 12px;
+  border: 1px solid var(--error);
+  border-radius: var(--radius-l);
+  background: var(--surface);
+  box-shadow: var(--shadow-l);
+}
+.toast > .icon { margin-top: 2px; color: var(--error); }
+.toast > span { flex: 1; padding-top: 1px; }

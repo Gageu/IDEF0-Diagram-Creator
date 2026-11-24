@@ -1,0 +1,9 @@
+/* The editor's styles, one file per part of the screen. Colours and sizes come from tokens.css only. */
+@import './tokens.css';
+@import './base.css';
+@import './shell.css';
+@import './sidebar.css';
+@import './diagram.css';
+@import './inspector.css';
+@import './glossary.css';
+@import './menu.css';

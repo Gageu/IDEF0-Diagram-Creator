@@ -20,9 +20,10 @@ All six milestones of the design spec are in place:
   libavoid, label placement, and a quality gate that retries with more room
   until the drawing has no defects.
 - **SVG renderer** ported from the reference pack's `idef0.py`.
-- **Editor**: a function tree, the live diagram with pan and zoom, an editor
-  for the selected function or arrow, and a drawer with rule violations, the
-  open diagram's inherited arrows and the glossary.
+- **Editor**: a collapsible function tree, the live diagram with pan and
+  zoom, an editor panel for the selected function or arrow, a glossary page,
+  right-click menus, and a status bar that opens the rule violations. It
+  follows the system's light or dark theme.
 - **Export**: the open diagram or all diagrams as SVG, the glossary and the
   ICOM tables as Markdown.
 
@@ -34,21 +35,32 @@ writes a JSON file that **Open** reads back.
 
 - Click a box, an arrow or a label to select it. Double-click a box to open
   its child diagram; the breadcrumb goes back up.
+- Right-click a box, an arrow, a row of the function tree or the empty part
+  of a diagram for its actions: rename, decompose, add an arrow, reorder,
+  delete, export.
+- The function tree opens and closes by branch, and always shows the open
+  diagram's boxes. The arrow keys move through it.
 - With a function selected, press `I`, `C`, `O` or `M` to jump to the add row
   for inputs, controls, outputs or mechanisms. Type a label, pick the other
   end, press Enter. Focus stays in the row for the next arrow.
 - Typing the label of an arrow that is already on the diagram branches that
   arrow to the function instead of adding a duplicate.
 - **Decompose** gives the selected function a child diagram. Its parent
-  arrows appear dashed at the frame until they are connected, from the
-  **Inherited arrows** tab or by clicking the dashed arrow.
+  arrows are listed under the tree as **Parent arrows** and drawn dashed at
+  the frame until they are connected, with the **Connect** button there or by
+  right-clicking the dashed arrow.
+- The **Glossary** tab lists every function and arrow name with a search and
+  a filter for the terms that still need a definition. The same definition
+  can be typed in the editor panel while the function or arrow is selected.
+  A name that leaves the model is marked unused, not deleted.
+- The status bar shows the count of rule errors and warnings; click it for
+  the list, and click a violation to go to its element.
 - **Export** downloads the open diagram, or all diagrams as a zip of SVG
   files, plus the glossary and ICOM tables as Markdown. A diagram with a rule
   error is left out and the message says why; warnings do not block export.
-- The **Glossary** tab lists every function and arrow name. Type definitions
-  there; a name that leaves the model is marked unused, not deleted.
-- `F` adds a function, `Ctrl+Z` and `Ctrl+Shift+Z` undo and redo, `Ctrl+S`
-  saves.
+- `F` adds a function, `F2` renames the selection, `Del` deletes it,
+  `Ctrl+Z` and `Ctrl+Shift+Z` undo and redo, `Ctrl+S` saves. The keyboard
+  button in the top bar lists every shortcut.
 
 ## Getting started
 
