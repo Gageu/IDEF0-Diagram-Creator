@@ -60,6 +60,17 @@ export function filterGlossary(rows: readonly GlossaryRow[], filter: GlossaryFil
   );
 }
 
+/**
+ * The term to move to after the one at `term` is filled in: the next listed
+ * term that still needs a definition, going round to the top of the list
+ * after the last one. Undefined when no other listed term needs one.
+ */
+export function nextUndefinedTerm(shown: readonly GlossaryRow[], term: string): string | undefined {
+  const at = shown.findIndex((row) => row.term === term);
+  const after = [...shown.slice(at + 1), ...shown.slice(0, Math.max(at, 0))];
+  return after.find((row) => row.status === 'undefined')?.term;
+}
+
 /** The definition stored for a name, or an empty string. */
 export function definitionOf(model: Model, term: string): string {
   return model.glossary.find((e) => e.term === term)?.definition ?? '';

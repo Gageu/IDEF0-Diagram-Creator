@@ -4,7 +4,8 @@ import { useEffect, useState, type KeyboardEvent, type Ref } from 'react';
  * A text input that commits when the user leaves it or presses Enter, and
  * reverts on Escape. Each commit is one undo step, and the diagram is laid
  * out once per edit instead of once per keystroke. A multi-line field takes
- * Shift+Enter for a new line.
+ * Shift+Enter for a new line. `onEnter` runs after an Enter commit, for
+ * callers that move the cursor on to another field.
  */
 export function TextField(props: {
   value: string;
@@ -13,6 +14,7 @@ export function TextField(props: {
   multiline?: boolean;
   placeholder?: string;
   disabled?: boolean;
+  onEnter?: (() => void) | undefined;
   /** The underlying field, for callers that move the cursor into it. */
   fieldRef?: Ref<HTMLInputElement | HTMLTextAreaElement>;
 }) {
@@ -26,6 +28,7 @@ export function TextField(props: {
     if (event.key === 'Enter' && !(props.multiline && event.shiftKey)) {
       event.preventDefault();
       event.currentTarget.blur();
+      props.onEnter?.();
     } else if (event.key === 'Escape') {
       setDraft(props.value);
       event.currentTarget.blur();
