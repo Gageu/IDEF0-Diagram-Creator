@@ -4,7 +4,7 @@
  * expanded. None of it is part of the model, so none of it is saved or
  * undone; it sits beside `editorState`, which holds what the user is editing.
  */
-import type { FunctionId, Role } from '../../domain';
+import type { ArrowId, FunctionId, Role } from '../../domain';
 
 export type WorkspaceView = 'diagram' | 'glossary';
 export type GlossaryFilter = 'all' | 'undefined' | 'unused';
@@ -21,6 +21,8 @@ export interface WorkspaceState {
   readonly expanded: ReadonlySet<FunctionId>;
   /** The field to focus once the editor panel shows the selection. Cleared when done. */
   readonly focus: FocusField | undefined;
+  /** The parent arrow being dragged from the sidebar, so the diagram can show where it may land. */
+  readonly draggedParentArrow: ArrowId | undefined;
   /** Goes up by one each time the diagram is asked to fit its pane. */
   readonly fitRequests: number;
 }
@@ -35,6 +37,7 @@ export type WorkspaceAction =
   | { readonly type: 'expand-only'; readonly ids: readonly FunctionId[] }
   | { readonly type: 'focus'; readonly field: FocusField }
   | { readonly type: 'focused' }
+  | { readonly type: 'drag-parent-arrow'; readonly id: ArrowId | undefined }
   | { readonly type: 'fit' };
 
 export function createWorkspaceState(expanded: readonly FunctionId[] = []): WorkspaceState {
@@ -46,6 +49,7 @@ export function createWorkspaceState(expanded: readonly FunctionId[] = []): Work
     editorOpen: true,
     expanded: new Set(expanded),
     focus: undefined,
+    draggedParentArrow: undefined,
     fitRequests: 0,
   };
 }
@@ -75,6 +79,8 @@ export function workspaceReducer(state: WorkspaceState, action: WorkspaceAction)
       return { ...state, focus: action.field, editorOpen: true, view: 'diagram' };
     case 'focused':
       return state.focus === undefined ? state : { ...state, focus: undefined };
+    case 'drag-parent-arrow':
+      return state.draggedParentArrow === action.id ? state : { ...state, draggedParentArrow: action.id };
     case 'fit':
       return { ...state, view: 'diagram', fitRequests: state.fitRequests + 1 };
   }
